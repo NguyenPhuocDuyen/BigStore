@@ -46,8 +46,8 @@ namespace BigStore.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "{0} không được trống")]
+            [EmailAddress(ErrorMessage = "{0} đúng định dạng")]
             public string Email { get; set; }
         }
 
@@ -65,7 +65,7 @@ namespace BigStore.Areas.Identity.Pages.Account
             var user = await _userManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
+                ModelState.AddModelError(string.Empty, "Đã gửi lại email xác thực, hãy kiểm tra lại email của bạn.");
                 return Page();
             }
 
@@ -82,7 +82,7 @@ namespace BigStore.Areas.Identity.Pages.Account
                 "Confirm your email",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-            ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
+            ModelState.AddModelError(string.Empty, "Đã gửi lại email xác thực, hãy kiểm tra lại email của bạn.");
             return Page();
         }
     }
