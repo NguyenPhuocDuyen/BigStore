@@ -77,9 +77,23 @@ builder.Services.AddAuthentication()
         options.ClientSecret = googleAuthNSection["ClientSecret"];
         //https://localhost:7292/LoginToGoogle
         options.CallbackPath = "/LoginToGoogle";
+        //options.SaveTokens = true;
+    }).AddFacebook(facebookOptions => {
+        // Đọc cấu hình
+        IConfigurationSection facebookAuthNSection = builder.Configuration.GetSection("Authentication:Facebook");
+        facebookOptions.AppId = facebookAuthNSection["AppId"];
+        facebookOptions.AppSecret = facebookAuthNSection["AppSecret"];
+        // Thiết lập đường dẫn Facebook chuyển hướng đến
+        facebookOptions.CallbackPath = "/LoginToFacebook";
     })
-    //.AddFacebook()
-    //.AddTwitter()
+    //.AddMicrosoftAccount(microsoftOptions => {
+    //    // Đọc cấu hình
+    //    IConfigurationSection microsoftAuthNSection = builder.Configuration.GetSection("Authentication:Microsoft");
+    //    microsoftOptions.ClientId = microsoftAuthNSection["ClientId"];
+    //    microsoftOptions.ClientSecret = microsoftAuthNSection["ClientSecret"];
+    //    // Thiết lập đường dẫn Facebook chuyển hướng đến
+    //    //microsoftOptions.CallbackPath = "/LoginToMicrosoft";
+    //})
     //.AddMicrosoftAccount()
     ;
 
