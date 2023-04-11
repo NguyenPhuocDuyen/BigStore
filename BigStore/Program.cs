@@ -1,10 +1,12 @@
 using BigStore.Data;
 using BigStore.Modes;
 using BigStore.Utility;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +32,8 @@ builder.Services.AddIdentity<User, IdentityRole>()
         .AddDefaultTokenProviders();
 
 // Truy cập IdentityOptions
-builder.Services.Configure<IdentityOptions>(options => {
+builder.Services.Configure<IdentityOptions>(options =>
+{
     // Thiết lập về Password
     options.Password.RequireDigit = false; // Không bắt phải có số
     options.Password.RequireLowercase = false; // Không bắt phải có chữ thường
@@ -62,6 +65,23 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/AccessDenied";
 });
+
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        // Đọc thông tin Authentication:Google từ appsettings.json
+        IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+
+        // Thiết lập ClientID và ClientSecret để truy cập API google
+        options.ClientId = googleAuthNSection["ClientId"];
+        options.ClientSecret = googleAuthNSection["ClientSecret"];
+        //https://localhost:7292/LoginToGoogle
+        options.CallbackPath = "/LoginToGoogle";
+    })
+    //.AddFacebook()
+    //.AddTwitter()
+    //.AddMicrosoftAccount()
+    ;
 
 builder.Services.AddRazorPages();
 
