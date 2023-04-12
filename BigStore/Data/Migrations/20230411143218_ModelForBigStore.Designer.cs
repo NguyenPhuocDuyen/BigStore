@@ -4,6 +4,7 @@ using BigStore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BigStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230411143218_ModelForBigStore")]
+    partial class ModelForBigStore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,15 +216,7 @@ namespace BigStore.Data.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Newss");
                 });
@@ -866,15 +861,6 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.News", b =>
-                {
-                    b.HasOne("BigStore.Modes.User", "User")
-                        .WithMany("Newss")
-                        .HasForeignKey("UserId1");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BigStore.Modes.Notification", b =>
                 {
                     b.HasOne("BigStore.Modes.User", "User")
@@ -1113,8 +1099,6 @@ namespace BigStore.Data.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("LikeProducts");
-
-                    b.Navigation("Newss");
 
                     b.Navigation("Notifications");
 
