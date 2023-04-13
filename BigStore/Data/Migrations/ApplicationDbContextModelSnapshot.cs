@@ -22,7 +22,7 @@ namespace BigStore.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BigStore.Modes.Cart", b =>
+            modelBuilder.Entity("BigStore.Models.Cart", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,7 +51,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Carts");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Category", b =>
+            modelBuilder.Entity("BigStore.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -89,7 +89,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.DiscountCode", b =>
+            modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +139,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("DiscountCodes");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.DiscountType", b =>
+            modelBuilder.Entity("BigStore.Models.DiscountType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +161,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("DiscountTypes");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.LikeProduct", b =>
+            modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -187,7 +187,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("LikeProducts");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.News", b =>
+            modelBuilder.Entity("BigStore.Models.News", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -226,7 +226,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Newss");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Notification", b =>
+            modelBuilder.Entity("BigStore.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -257,7 +257,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Order", b =>
+            modelBuilder.Entity("BigStore.Models.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -308,7 +308,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.OrderDetail", b =>
+            modelBuilder.Entity("BigStore.Models.OrderDetail", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -337,7 +337,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("OrderDetails");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.OrderStatus", b =>
+            modelBuilder.Entity("BigStore.Models.OrderStatus", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -362,7 +362,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("OrderStatuses");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Product", b =>
+            modelBuilder.Entity("BigStore.Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -409,7 +409,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.ProductImage", b =>
+            modelBuilder.Entity("BigStore.Models.ProductImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -438,7 +438,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("ProductImages");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.ProductReport", b =>
+            modelBuilder.Entity("BigStore.Models.ProductReport", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -471,7 +471,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("ProductReports");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Review", b =>
+            modelBuilder.Entity("BigStore.Models.Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -513,7 +513,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Shop", b =>
+            modelBuilder.Entity("BigStore.Models.Shop", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -560,7 +560,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Shops");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.User", b =>
+            modelBuilder.Entity("BigStore.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -644,7 +644,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("BigStore.Modes.UserAddress", b =>
+            modelBuilder.Entity("BigStore.Models.UserAddress", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -821,15 +821,15 @@ namespace BigStore.Data.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Cart", b =>
+            modelBuilder.Entity("BigStore.Models.Cart", b =>
                 {
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("Carts")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("Carts")
                         .HasForeignKey("UserId1");
 
@@ -838,9 +838,9 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.DiscountCode", b =>
+            modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
-                    b.HasOne("BigStore.Modes.DiscountType", "DiscountType")
+                    b.HasOne("BigStore.Models.DiscountType", "DiscountType")
                         .WithMany("DiscountCodes")
                         .HasForeignKey("DiscountTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -849,15 +849,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("DiscountType");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.LikeProduct", b =>
+            modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
                 {
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("LikeProducts")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("LikeProducts")
                         .HasForeignKey("UserId1");
 
@@ -866,39 +866,39 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.News", b =>
+            modelBuilder.Entity("BigStore.Models.News", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("Newss")
                         .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Notification", b =>
+            modelBuilder.Entity("BigStore.Models.Notification", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("Notifications")
                         .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Order", b =>
+            modelBuilder.Entity("BigStore.Models.Order", b =>
                 {
-                    b.HasOne("BigStore.Modes.DiscountCode", "DiscountCode")
+                    b.HasOne("BigStore.Models.DiscountCode", "DiscountCode")
                         .WithMany("Orders")
                         .HasForeignKey("DiscountCodeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.OrderStatus", "Status")
+                    b.HasOne("BigStore.Models.OrderStatus", "Status")
                         .WithMany("Orders")
                         .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId1");
 
@@ -909,15 +909,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.OrderDetail", b =>
+            modelBuilder.Entity("BigStore.Models.OrderDetail", b =>
                 {
-                    b.HasOne("BigStore.Modes.Order", "Order")
+                    b.HasOne("BigStore.Models.Order", "Order")
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -928,15 +928,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Product", b =>
+            modelBuilder.Entity("BigStore.Models.Product", b =>
                 {
-                    b.HasOne("BigStore.Modes.Category", "Category")
+                    b.HasOne("BigStore.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.Shop", "Shop")
+                    b.HasOne("BigStore.Models.Shop", "Shop")
                         .WithMany("Products")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -947,9 +947,9 @@ namespace BigStore.Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.ProductImage", b =>
+            modelBuilder.Entity("BigStore.Models.ProductImage", b =>
                 {
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("ProductImages")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -958,15 +958,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.ProductReport", b =>
+            modelBuilder.Entity("BigStore.Models.ProductReport", b =>
                 {
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("ProductReports")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("ProductReports")
                         .HasForeignKey("UserId1");
 
@@ -975,15 +975,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Review", b =>
+            modelBuilder.Entity("BigStore.Models.Review", b =>
                 {
-                    b.HasOne("BigStore.Modes.Product", "Product")
+                    b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("Reviews")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId1");
 
@@ -992,18 +992,18 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.User", b =>
+            modelBuilder.Entity("BigStore.Models.User", b =>
                 {
-                    b.HasOne("BigStore.Modes.Shop", "Shop")
+                    b.HasOne("BigStore.Models.Shop", "Shop")
                         .WithOne("User")
-                        .HasForeignKey("BigStore.Modes.User", "ShopId");
+                        .HasForeignKey("BigStore.Models.User", "ShopId");
 
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.UserAddress", b =>
+            modelBuilder.Entity("BigStore.Models.UserAddress", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", "User")
+                    b.HasOne("BigStore.Models.User", "User")
                         .WithMany("UserAddresss")
                         .HasForeignKey("UserId1");
 
@@ -1021,7 +1021,7 @@ namespace BigStore.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", null)
+                    b.HasOne("BigStore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1030,7 +1030,7 @@ namespace BigStore.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", null)
+                    b.HasOne("BigStore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1045,7 +1045,7 @@ namespace BigStore.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Modes.User", null)
+                    b.HasOne("BigStore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1054,39 +1054,39 @@ namespace BigStore.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("BigStore.Modes.User", null)
+                    b.HasOne("BigStore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Category", b =>
+            modelBuilder.Entity("BigStore.Models.Category", b =>
                 {
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.DiscountCode", b =>
+            modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.DiscountType", b =>
+            modelBuilder.Entity("BigStore.Models.DiscountType", b =>
                 {
                     b.Navigation("DiscountCodes");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Order", b =>
+            modelBuilder.Entity("BigStore.Models.Order", b =>
                 {
                     b.Navigation("OrderDetails");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.OrderStatus", b =>
+            modelBuilder.Entity("BigStore.Models.OrderStatus", b =>
                 {
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Product", b =>
+            modelBuilder.Entity("BigStore.Models.Product", b =>
                 {
                     b.Navigation("Carts");
 
@@ -1101,14 +1101,14 @@ namespace BigStore.Data.Migrations
                     b.Navigation("Reviews");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.Shop", b =>
+            modelBuilder.Entity("BigStore.Models.Shop", b =>
                 {
                     b.Navigation("Products");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Modes.User", b =>
+            modelBuilder.Entity("BigStore.Models.User", b =>
                 {
                     b.Navigation("Carts");
 

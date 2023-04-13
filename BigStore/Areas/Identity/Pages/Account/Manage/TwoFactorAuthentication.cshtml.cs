@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
-using BigStore.Modes;
+using BigStore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

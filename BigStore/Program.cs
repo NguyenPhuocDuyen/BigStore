@@ -1,5 +1,7 @@
 using BigStore.Data;
-using BigStore.Modes;
+using BigStore.Middleware;
+using BigStore.Models;
+using BigStore.Services;
 using BigStore.Utility;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
@@ -97,6 +99,16 @@ builder.Services.AddAuthentication()
     //.AddMicrosoftAccount()
     ;
 
+builder.Services.AddSession(optons =>
+{
+    optons.Cookie.Name = "BigStore";
+    optons.IdleTimeout = new TimeSpan(0, 30, 0);
+});
+
+//builder.Services.AddSingleton<SecondMiddleware>();
+builder.Services.AddSingleton<IdentityErrorDescriber, AppIdentityErrorDescriber>();
+
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -120,6 +132,9 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//app.UseMyMiddleware();
+//app.UseMiddleware<SecondMiddleware>();
 
 app.MapControllerRoute(
     name: "areas",

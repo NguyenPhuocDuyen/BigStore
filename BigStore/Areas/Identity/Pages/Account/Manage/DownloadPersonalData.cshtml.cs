@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using BigStore.Modes;
+using BigStore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -48,6 +48,7 @@ namespace BigStore.Areas.Identity.Pages.Account.Manage
             var personalData = new Dictionary<string, string>();
             var personalDataProps = typeof(User).GetProperties().Where(
                             prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
+            
             foreach (var p in personalDataProps)
             {
                 personalData.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");

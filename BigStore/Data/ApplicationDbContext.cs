@@ -1,4 +1,4 @@
-﻿using BigStore.Modes;
+﻿using BigStore.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
