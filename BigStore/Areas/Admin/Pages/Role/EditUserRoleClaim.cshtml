@@ -1,0 +1,41 @@
+﻿@page "/admin/edit-user-role-claim/"
+@model BigStore.Areas.Admin.Pages.Role.EditUserRoleClaimModel
+@{
+   ViewData["Title"] = "Thêm claim cho User";
+}
+
+<h4>@ViewData["Title"]: @Model.User.UserName</h4>
+<partial name="_StatusMessage" model="@Model.StatusMessage" />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group mb-2">
+                <label asp-for="Input.ClaimType"></label>
+                <input asp-for="Input.ClaimType" class="form-control">
+                <span asp-validation-for="Input.ClaimType" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-2">
+                <label asp-for="Input.ClaimValue"></label>
+                <input asp-for="Input.ClaimValue" class="form-control">
+                <span asp-validation-for="Input.ClaimValue" class="text-danger"></span>
+            </div>
+            @if (Model.UserClaim is null)
+            {
+                <input value="Tạo mới" type="submit" class="btn btn-primary"/>
+            }
+            else
+            {
+                <input value="Cập nhật" type="submit" class="btn btn-primary"/>
+                <input value="Xoá" type="submit" class="btn btn-danger" asp-route-claimid="@Model.UserClaim.Id" asp-page-handler="Delete"/>
+            }
+                
+            <a class="btn btn-primary" asp-page="./AddUserRole" asp-route-userid="@Model.User.Id">Chỉnh sửa role cho user</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

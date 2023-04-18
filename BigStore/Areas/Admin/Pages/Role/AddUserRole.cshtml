@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/admin/add-user-role/"
 @model BigStore.Areas.Admin.Pages.Role.AddUserRoleModel
 @{
    ViewData["Title"] = "Cập nhật role cho User";
@@ -23,6 +23,32 @@
             <a class="btn btn-primary" asp-page="./User">Danh sách</a>
             <button type="submit" class="btn btn-danger">Cập nhật</button>
         </form>
+        <hr />
+        <p>Các claim của user có được từ role:</p>
+        @if(Model.ClaimInRoles.Count > 0)
+        {
+            <ul>
+                @foreach (var claim in Model.ClaimInRoles)
+                {
+                    <li>@claim.ClaimType: @claim.ClaimValue</li>
+                }
+            </ul>
+        }
+        <p>Các claim riêng của user:</p>
+        <a asp-page="./EditUserRoleClaim" asp-page-handler="AddClaim" asp-route-userid="@Model.Input.ID" class="btn btn-primary">+ Thêm claim riêng</a>
+        @if(Model.ClaimInUsers.Count > 0)
+        {
+            <ul>
+                @foreach (var claim in Model.ClaimInUsers)
+                {
+                    <li>
+                        <a asp-page="./EditUserRoleClaim" asp-page-handler="EditClaim" asp-route-claimid="@claim.Id">
+                            @claim.ClaimType: @claim.ClaimValue
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
     </div>
 </div>
 

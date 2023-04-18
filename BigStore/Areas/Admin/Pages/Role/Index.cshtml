@@ -1,4 +1,4 @@
-﻿@page "/admin/role/"
+﻿@page "/admin/role"
 @model IndexModel
 @{
     ViewData["Title"] = "Danh sách các role (vai trò)";
@@ -6,11 +6,9 @@
 <h3>Danh sách các role</h3>
 <partial name="_StatusMessage" model="@Model.StatusMessage" />
 
-<form method="POST" class="my-1 d-inline">
-    <button class="btn btn-secondary" asp-page="./Create" 
-            asp-page-handler="StartNewRole">Thêm mới Role</button>
-</form>
-<a class="btn btn-secondary" asp-page="./User">Gán role cho người dùng</a>
+<a class="btn btn-primary" asp-page="./Create">Thêm mới Role</a>
+
+<a class="btn btn-success" asp-page="./User">Gán role cho người dùng</a>
 
 <table class="table">
     <tr>
@@ -22,16 +20,17 @@
         {
             <tr>
             <td>@role.Id</td>
-            <td>@role.Name</td>
+            <td>@role.Name
+                @foreach(var claim in role.Claims)
+                {
+                    <small>@claim</small>
+                }
+            </td>
             <td>
-                <form method="POST" class="d-inline">
-                    <button name="Input.ID" value="@role.Id" class="btn btn-success btn-sm" 
-                            asp-page="./Create" asp-page-handler="StartUpdate">Cập nhật Role</button>
-                </form>
-                <form method="POST" class="d-inline">
-                    <button name="Input.ID" value="@role.Id" class="btn btn-success btn-sm" 
-                            asp-page="./Delete">Xóa Role</button>
-                </form>
+                <a name="Input.ID" class="btn btn-success btn-sm" 
+                    asp-page="./Edit" asp-route-roleid="@role.Id">Cập nhật Role</a>
+                <a name="Input.ID" class="btn btn-danger btn-sm" 
+                    asp-page="./Delete" asp-route-roleid="@role.Id">Xóa Role</a>
             </td>
             </tr>
         }

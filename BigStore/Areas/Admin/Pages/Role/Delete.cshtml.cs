@@ -22,41 +22,45 @@ namespace BigStore.Areas.Admin.Pages.Role
         [BindProperty]
         public InputModel Input { set; get; }
 
-        [BindProperty]
-        public bool isConfirmed { set; get; }
+        public async Task<IActionResult> OnGet(string roleid)
+        {
+            if (string.IsNullOrEmpty(roleid))
+            {
+                StatusMessage = "Không tìm thấy role";
+                return RedirectToPage("./Index");
+            }
 
-        public IActionResult OnGet() => NotFound("Không thấy");
+            var role = await _roleManager.FindByIdAsync(roleid);
+            if (role is null)
+            {
+                return NotFound("Không thấy role cần xóa");
+            }
+
+            Input = new InputModel { 
+                ID = roleid ,
+                Name = role.Name
+            };
+
+            return Page();
+        }
 
         public async Task<IActionResult> OnPost()
         {
             if (!ModelState.IsValid)
             {
-                return NotFound("Không xóa được");
+                return Page();
             }
 
             var role = await _roleManager.FindByIdAsync(Input.ID);
-            if (role == null)
+            if (role is null)
             {
                 return NotFound("Không thấy role cần xóa");
             }
 
-            ModelState.Clear();
+            await _roleManager.DeleteAsync(role);
+            StatusMessage = "Đã xóa " + role.Name;
 
-            if (isConfirmed)
-            {
-                //Xóa
-                await _roleManager.DeleteAsync(role);
-                StatusMessage = "Đã xóa " + role.Name;
-
-                return RedirectToPage("Index");
-            }
-            else
-            {
-                Input.Name = role.Name;
-                isConfirmed = true;
-            }
-
-            return Page();
+            return RedirectToPage("./Index");
         }
     }
 }

@@ -108,6 +108,17 @@ builder.Services.AddSession(optons =>
 //builder.Services.AddSingleton<SecondMiddleware>();
 builder.Services.AddSingleton<IdentityErrorDescriber, AppIdentityErrorDescriber>();
 
+// add policy
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AllowEditRole", policybuilder =>
+    {
+        //dieu kien policy
+        policybuilder.RequireAuthenticatedUser();
+        policybuilder.RequireRole("Admin");
+        policybuilder.RequireClaim("manage", "add");
+    });
+});
 
 builder.Services.AddRazorPages();
 
