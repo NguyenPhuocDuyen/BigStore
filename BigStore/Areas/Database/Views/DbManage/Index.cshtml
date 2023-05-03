@@ -1,0 +1,53 @@
+﻿@using BigStore.Data;
+@using Microsoft.EntityFrameworkCore;
+@using System.Data;
+
+@inject ApplicationDbContext dbContext
+@{
+    ViewData["Title"] = "Thông tin database";
+    var connect = dbContext.Database.GetDbConnection();
+    var dbName = connect.Database;
+    var can_connect = dbContext.Database.CanConnect();
+}
+<h2>Thông tin</h2>
+<p>Database: @dbName</p>
+<p>Source: @connect.DataSource</p>
+<p>State: @connect.State</p>
+<hr/>
+@foreach(var migration in dbContext.Database.GetAppliedMigrations())
+{
+    <p>@migration</p>
+}
+@foreach(var migration in dbContext.Database.GetPendingMigrations())
+{
+    <p>@migration (pending)</p>
+}
+@if (dbContext.Database.GetPendingMigrations().Any())
+{
+    <form method="post">
+        <button type="submit" class="btn btn-primary" asp-action="Migrate">Tạo Db (Cập nhật migration)</button>
+    </form>
+}
+
+@if(!can_connect)
+{
+    <p class="alert alert-danger">Không có khả năng kết nối đến Database</p>
+}
+else 
+{
+    <h2>Các table</h2>
+    await dbContext.Database.OpenConnectionAsync();
+    var table = dbContext.Database.GetDbConnection().GetSchema("Tables");
+    <ul>
+        @foreach (DataRow row in table.Rows)
+        {
+            <li>
+                @row["TABLE_NAME"]
+            </li>
+        }
+    </ul>
+
+    <a class="btn btn-danger" asp-action="DeleteDb">
+        Xoá Database: @dbName
+    </a>
+}

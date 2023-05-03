@@ -1,9 +1,11 @@
 using BigStore.Data;
 using BigStore.Middleware;
 using BigStore.Models;
+using BigStore.Security.Requirements;
 using BigStore.Services;
 using BigStore.Utility;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +47,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequiredUniqueChars = 1; // Số ký tự riêng biệt
 
     // Cấu hình Lockout - khóa user
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1); // Khóa 5 phút
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1); // Khóa 1 phút
     options.Lockout.MaxFailedAccessAttempts = 3; // Thất bại 5 lầ thì khóa
     options.Lockout.AllowedForNewUsers = true;
 
@@ -107,6 +109,7 @@ builder.Services.AddSession(optons =>
 
 //builder.Services.AddSingleton<SecondMiddleware>();
 builder.Services.AddSingleton<IdentityErrorDescriber, AppIdentityErrorDescriber>();
+builder.Services.AddTransient<IAuthorizationHandler, AppAuthorizationHandler>();
 
 // add policy
 builder.Services.AddAuthorization(options =>
@@ -116,7 +119,19 @@ builder.Services.AddAuthorization(options =>
         //dieu kien policy
         policybuilder.RequireAuthenticatedUser();
         policybuilder.RequireRole("Admin");
-        policybuilder.RequireClaim("manage", "add");
+        //policybuilder.RequireClaim("manage", "add");
+    });
+
+    options.AddPolicy("InGenZ", policybuilder =>
+    {
+        //dieu kien policy
+        policybuilder.RequireAuthenticatedUser();
+        policybuilder.Requirements.Add(new GenZRequirement());
+    });
+
+    options.AddPolicy("ShowAdminMenu", policybuilder =>
+    {
+        policybuilder.RequireRole("Admin");
     });
 });
 

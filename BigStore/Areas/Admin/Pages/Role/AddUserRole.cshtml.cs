@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BigStore.Areas.Admin.Pages.Role
 {
-    [Authorize(Policy = "AllowEditRole")]
+    //[Authorize(Policy = "AllowEditRole")]
     public class AddUserRoleModel : PageModel
     {
         private readonly RoleManager<IdentityRole> _roleManager;

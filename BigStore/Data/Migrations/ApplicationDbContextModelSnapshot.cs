@@ -17,7 +17,7 @@ namespace BigStore.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -73,7 +73,15 @@ namespace BigStore.Data.Migrations
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -83,7 +91,9 @@ namespace BigStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("Slug")
                         .IsUnique();
 
                     b.ToTable("Categories");
@@ -583,10 +593,12 @@ namespace BigStore.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
@@ -838,6 +850,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BigStore.Models.Category", b =>
+                {
+                    b.HasOne("BigStore.Models.Category", "ParentCategory")
+                        .WithMany("CategoryChildren")
+                        .HasForeignKey("ParentCategoryId");
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
                     b.HasOne("BigStore.Models.DiscountType", "DiscountType")
@@ -1063,6 +1084,8 @@ namespace BigStore.Data.Migrations
 
             modelBuilder.Entity("BigStore.Models.Category", b =>
                 {
+                    b.Navigation("CategoryChildren");
+
                     b.Navigation("Products");
                 });
 

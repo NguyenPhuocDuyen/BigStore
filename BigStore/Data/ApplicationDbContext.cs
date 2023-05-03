@@ -33,7 +33,7 @@ namespace BigStore.Data
             base.OnModelCreating(builder);
 
             builder.Entity<Category>()
-               .HasIndex(b => b.Name)
+               .HasIndex(b => b.Slug)
                .IsUnique();
 
             builder.Entity<DiscountCode>()
