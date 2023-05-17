@@ -113,6 +113,13 @@ namespace BigStore.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
+                if (user.PasswordHash is null)
+                {
+                    ModelState.AddModelError(string.Empty, "Thất bại, tài khoản chỉ có thể đăng nhập bằng dịch vụ ngoài.");
+                    return Page();
+                }
+                        
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.UserNameOrEmail, Input.Password, Input.RememberMe, lockoutOnFailure: true);
@@ -120,7 +127,7 @@ namespace BigStore.Areas.Identity.Pages.Account
                 // Tìm username theo email và đăng nhập lại
                 if (!result.Succeeded)
                 {
-                    var user = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
+                    user = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
                     if (user != null)
                     {
                         result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);

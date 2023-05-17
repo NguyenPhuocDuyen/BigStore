@@ -484,7 +484,7 @@ namespace BigStore.Data.Migrations
                     b.ToTable("ProductReports");
                 });
 
-            modelBuilder.Entity("BigStore.Models.Review", b =>
+            modelBuilder.Entity("BigStore.Models.ProductReview", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -999,7 +999,7 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BigStore.Models.Review", b =>
+            modelBuilder.Entity("BigStore.Models.ProductReview", b =>
                 {
                     b.HasOne("BigStore.Models.Product", "Product")
                         .WithMany("Reviews")

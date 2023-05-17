@@ -28,6 +28,13 @@ namespace BigStore.Models
         [Range(1, int.MaxValue)]
         public int Quantity { get; set; } = 0;
 
+        //chuỗi Url
+        [Required(ErrorMessage = "Phải tạo url")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "{0} dài {1} đến {2}")]
+        [RegularExpression(@"^[a-z0-9-]*$", ErrorMessage = "Chỉ dùng các ký tự [a-z0-9-]")]
+        [Display(Name = "Url hiện thị")]
+        public string Slug { set; get; } = string.Empty;
+
         public DateTime? CreateAt { get; set; } = DateTime.Now;
         public DateTime? UpdateAt { get; set; } = DateTime.Now;
         public bool? IsDelete { get; set; }
@@ -40,6 +47,7 @@ namespace BigStore.Models
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
         public virtual ICollection<ProductImage>? ProductImages { get; set; }
         public virtual ICollection<ProductReport>? ProductReports { get; set; }
-        public virtual ICollection<Review>? Reviews { get; set; }
+        public virtual ICollection<ProductReview>? Reviews { get; set; }
+        public virtual ICollection<FavoriteProduct>? FavoriteProducts { get; set; }
     }
 }

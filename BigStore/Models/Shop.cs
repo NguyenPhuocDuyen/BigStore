@@ -12,7 +12,7 @@ namespace BigStore.Models
         public int UserId { get; set; }
 
         [Required, MaxLength(255)]
-        public string Name { get; set; } = string.Empty;
+        public string ShopName { get; set; } = string.Empty;
 
         [Required, Column(TypeName = "nvarchar(max)")]
         public string Description { get; set; } = string.Empty;

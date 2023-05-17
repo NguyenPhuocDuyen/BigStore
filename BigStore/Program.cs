@@ -1,9 +1,12 @@
 using BigStore.Data;
+using BigStore.Data.DbInitializer;
 using BigStore.Middleware;
 using BigStore.Models;
+using BigStore.Models.OtherModels;
 using BigStore.Security.Requirements;
 using BigStore.Services;
 using BigStore.Utility;
+using BigStore.Validation;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +18,8 @@ using System.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// database initial
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 // Register mail config
 builder.Services.AddOptions();                                        // Kích hoạt Options
 var mailsettings = builder.Configuration.GetSection("MailSettings");  // đọc config
@@ -118,7 +123,7 @@ builder.Services.AddAuthorization(options =>
     {
         //dieu kien policy
         policybuilder.RequireAuthenticatedUser();
-        policybuilder.RequireRole("Admin");
+        policybuilder.RequireRole(RoleContent.Admin);
         //policybuilder.RequireClaim("manage", "add");
     });
 
@@ -131,9 +136,21 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("ShowAdminMenu", policybuilder =>
     {
-        policybuilder.RequireRole("Admin");
+        policybuilder.RequireRole(RoleContent.Admin);
     });
 });
+// validation file image
+//builder.Services.AddTransient<IFileValidator, FileValidator>();
+// signal R
+//builder.Services.AddSignalR();
+//session
+//builder.Services.AddDistributedMemoryCache();
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromMinutes(1440);//one day
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//});
 
 builder.Services.AddRazorPages();
 
@@ -156,9 +173,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    dbInitializer.Initialize();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+//app.UseSession();
 //app.UseMyMiddleware();
 //app.UseMiddleware<SecondMiddleware>();
 
@@ -168,5 +192,6 @@ app.MapControllerRoute(
 );
 
 app.MapRazorPages();
+//app.MapHub<ChatHub>("/chathub");
 
 app.Run();

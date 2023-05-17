@@ -1,4 +1,5 @@
 using BigStore.Data;
+using BigStore.Models.OtherModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BigStore.Areas.Admin.Pages.Role
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RoleContent.Admin)]
     public class IndexModel : RolePageModel
     {
         public IndexModel(RoleManager<IdentityRole> roleManager) : base(roleManager)

@@ -9,7 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="3.6.0" />
+    <Compile Remove="wwwroot\images\avatas\**" />
+    <Content Remove="wwwroot\images\avatas\**" />
+    <EmbeddedResource Remove="wwwroot\images\avatas\**" />
+    <None Remove="wwwroot\images\avatas\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="7.0.5" />
@@ -24,7 +31,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.6" />
-    <PackageReference Include="MimeKit" Version="3.6.1" />
+    <PackageReference Include="MimeKit" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +45,8 @@
     <Folder Include="Areas\Seller\Data\" />
     <Folder Include="Areas\Seller\Models\" />
     <Folder Include="Areas\Seller\Views\" />
+    <Folder Include="assets\scss\" />
+    <Folder Include="wwwroot\images\categories\" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BigStore.Models
 {
-    public class Review
+    public class ProductReview
     {
         [Key]
         public int Id { get; set; }

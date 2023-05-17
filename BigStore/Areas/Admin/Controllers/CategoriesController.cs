@@ -9,6 +9,7 @@ using BigStore.Data;
 using BigStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using BigStore.Models.OtherModels;
+using BigStore.Utility;
 
 namespace BigStore.Areas.Admin.Controllers
 {
@@ -66,8 +67,8 @@ namespace BigStore.Areas.Admin.Controllers
                 {
                     Id = category.Id,
                     Title = prefix + " " + category.Title
-            });
-                if(category.CategoryChildren?.Count > 0)
+                });
+                if (category.CategoryChildren?.Count > 0)
                 {
                     CreateSelectItems(category.CategoryChildren.ToList(), des, level + 1);
                 }
@@ -88,7 +89,7 @@ namespace BigStore.Areas.Admin.Controllers
             categories.Insert(0, new Category()
             {
                 Id = -1,
-                Title = "Không có danh mục cha" 
+                Title = "Không có danh mục cha"
             });
 
             var items = new List<Category>();
@@ -101,10 +102,27 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description,Slug,ImageUrl")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile ThumbnailFile)
         {
             if (ModelState.IsValid)
             {
+                //save images
+                string fileName = "noimage.jpg";
+                if (ThumbnailFile != null && ThumbnailFile.Length > 0)
+                {
+                    fileName = CustomFile.GetUniqueFileName(ThumbnailFile.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories", fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ThumbnailFile.CopyToAsync(stream);
+                    }
+                    category.ImageUrl = "/images/categories/" + fileName;
+                } else
+                {
+                    category.ImageUrl = "/images/" + fileName;
+                }
+
                 if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
                 category.CreateAt = DateTime.Now;
                 category.UpdateAt = DateTime.Now;
@@ -113,6 +131,7 @@ namespace BigStore.Areas.Admin.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             var qr = (from c in _context.Categories select c)
                     .Include(x => x.ParentCategory)
                     .Include(x => x.CategoryChildren);
@@ -131,7 +150,7 @@ namespace BigStore.Areas.Admin.Controllers
             CreateSelectItems(categories, items, 0);
 
             ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
-            return View(category); 
+            return View(category);
         }
 
         // GET: Admin/Categories/Edit/5
@@ -172,25 +191,76 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description,Slug,ImageUrl,CreateAt,UpdateAt,IsDelete")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile ThumbnailFile)
         {
             if (id != category.Id)
             {
                 return NotFound();
             }
-            
+
+            bool canUpdate = true;
+
             if (category.ParentCategoryId == category.Id)
             {
+                canUpdate = false;
                 ModelState.AddModelError(string.Empty, "Phải chọn danh mục cha khác");
-            }    
+            }
 
-            if (ModelState.IsValid && category.ParentCategoryId != category.Id)
+            if (canUpdate && category.ParentCategoryId != null && category.ParentCategoryId != -1)
+            {
+                var childCates = _context.Categories.AsNoTracking()
+                                .Include(c => c.CategoryChildren)
+                                .ToList()
+                                .Where(c => c.ParentCategoryId == category.Id);
+
+                Func<List<Category>, bool> checkCateIds = null;
+                checkCateIds = (cates) =>
+                {
+                    foreach (var cate in cates)
+                    {
+                        if (cate.Id == category.ParentCategoryId)
+                        {
+                            canUpdate = false;
+                            ModelState.AddModelError(string.Empty, "Phải chọn danh mục cha khác");
+                            return true;
+                        }
+                        if (cate.CategoryChildren != null)
+                        {
+                            return checkCateIds(cate.CategoryChildren.ToList());
+                        }
+                    }
+                    return false;
+                };
+                checkCateIds(childCates.ToList());
+            }
+
+
+            if (ModelState.IsValid && canUpdate)
             {
                 try
                 {
+                    //save images
+                    string fileName = "noimage.jpg";
+                    if (ThumbnailFile != null && ThumbnailFile.Length > 0)
+                    {
+                        fileName = CustomFile.GetUniqueFileName(ThumbnailFile.FileName);
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories", fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await ThumbnailFile.CopyToAsync(stream);
+                        }
+                        category.ImageUrl = "/images/categories/" + fileName;
+                    }
+                    else
+                    {
+                        category.ImageUrl = "/images/" + fileName;
+                    }
+
                     if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
                     category.UpdateAt = DateTime.Now;
-                    _context.Update(category);
+                    _context.Entry(category).State = EntityState.Modified;
+                    //_context.Update(category);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -277,7 +347,7 @@ namespace BigStore.Areas.Admin.Controllers
 
         private bool CategoryExists(int id)
         {
-          return (_context.Categories?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Categories?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

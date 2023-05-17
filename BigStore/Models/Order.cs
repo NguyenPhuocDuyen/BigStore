@@ -9,7 +9,7 @@ namespace BigStore.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public int StatusId { get; set; }
+        public int OrderStatusId { get; set; }
         [Required]
         public int UserId { get; set; }
         [Required]
@@ -29,8 +29,9 @@ namespace BigStore.Models
         public string Address { get; set; } = string.Empty;
 
         public DateTime? CreateAt { get; set; } = DateTime.Now;
+        public DateTime? UpdateAt { get; set; } = DateTime.Now;
 
-        public virtual OrderStatus? Status { get; set; }    
+        public virtual OrderStatus? OrderStatus { get; set; }
         public virtual User? User { get; set; }
         public virtual DiscountCode? DiscountCode { get; set; }
 

@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BigStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230411143711_EditNewsModel")]
-    partial class EditNewsModel
+    [Migration("20230517091729_ReportModel")]
+    partial class ReportModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -76,7 +76,15 @@ namespace BigStore.Data.Migrations
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -86,7 +94,9 @@ namespace BigStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("Slug")
                         .IsUnique();
 
                     b.ToTable("Categories");
@@ -162,6 +172,30 @@ namespace BigStore.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DiscountTypes");
+                });
+
+            modelBuilder.Entity("BigStore.Models.FavoriteProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FavoriteProducts");
                 });
 
             modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
@@ -247,6 +281,9 @@ namespace BigStore.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("UpadteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -283,16 +320,19 @@ namespace BigStore.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("OrderStatusId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,0)");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -304,7 +344,7 @@ namespace BigStore.Data.Migrations
 
                     b.HasIndex("DiscountCodeId");
 
-                    b.HasIndex("StatusId");
+                    b.HasIndex("OrderStatusId");
 
                     b.HasIndex("UserId1");
 
@@ -359,9 +399,6 @@ namespace BigStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("OrderStatuses");
                 });
 
@@ -400,6 +437,11 @@ namespace BigStore.Data.Migrations
                     b.Property<int>("ShopId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
@@ -408,6 +450,9 @@ namespace BigStore.Data.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("ShopId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.ToTable("Products");
                 });
@@ -459,6 +504,12 @@ namespace BigStore.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ReportStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -468,6 +519,8 @@ namespace BigStore.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ReportStatusId");
 
                     b.HasIndex("UserId1");
 
@@ -513,7 +566,63 @@ namespace BigStore.Data.Migrations
 
                     b.HasIndex("UserId1");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("ProductReviews");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ReportProductReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductReviewId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReportStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductReviewId");
+
+                    b.HasIndex("ReportStatusId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ReportProductReviews");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ReportStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReportStatus");
                 });
 
             modelBuilder.Entity("BigStore.Models.Shop", b =>
@@ -539,15 +648,15 @@ namespace BigStore.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ShopName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
@@ -557,7 +666,7 @@ namespace BigStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("ShopName")
                         .IsUnique();
 
                     b.ToTable("Shops");
@@ -586,10 +695,12 @@ namespace BigStore.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
@@ -615,6 +726,9 @@ namespace BigStore.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ProductSubscriber")
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
@@ -666,6 +780,9 @@ namespace BigStore.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool?>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
@@ -841,6 +958,15 @@ namespace BigStore.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BigStore.Models.Category", b =>
+                {
+                    b.HasOne("BigStore.Models.Category", "ParentCategory")
+                        .WithMany("CategoryChildren")
+                        .HasForeignKey("ParentCategoryId");
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
                     b.HasOne("BigStore.Models.DiscountType", "DiscountType")
@@ -850,6 +976,25 @@ namespace BigStore.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("DiscountType");
+                });
+
+            modelBuilder.Entity("BigStore.Models.FavoriteProduct", b =>
+                {
+                    b.HasOne("BigStore.Models.Product", "Product")
+                        .WithMany("FavoriteProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.User", "User")
+                        .WithMany("FavoriteProducts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
@@ -895,9 +1040,9 @@ namespace BigStore.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BigStore.Models.OrderStatus", "Status")
+                    b.HasOne("BigStore.Models.OrderStatus", "OrderStatus")
                         .WithMany("Orders")
-                        .HasForeignKey("StatusId")
+                        .HasForeignKey("OrderStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -907,7 +1052,7 @@ namespace BigStore.Data.Migrations
 
                     b.Navigation("DiscountCode");
 
-                    b.Navigation("Status");
+                    b.Navigation("OrderStatus");
 
                     b.Navigation("User");
                 });
@@ -969,11 +1114,19 @@ namespace BigStore.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BigStore.Models.ReportStatus", "ReportStatus")
+                        .WithMany("ProductReports")
+                        .HasForeignKey("ReportStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BigStore.Models.User", "User")
                         .WithMany("ProductReports")
                         .HasForeignKey("UserId1");
 
                     b.Navigation("Product");
+
+                    b.Navigation("ReportStatus");
 
                     b.Navigation("User");
                 });
@@ -991,6 +1144,31 @@ namespace BigStore.Data.Migrations
                         .HasForeignKey("UserId1");
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ReportProductReview", b =>
+                {
+                    b.HasOne("BigStore.Models.ProductReview", "ProductReview")
+                        .WithMany()
+                        .HasForeignKey("ProductReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.ReportStatus", "ReportStatus")
+                        .WithMany("ReportProductReviews")
+                        .HasForeignKey("ReportStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("ProductReview");
+
+                    b.Navigation("ReportStatus");
 
                     b.Navigation("User");
                 });
@@ -1066,6 +1244,8 @@ namespace BigStore.Data.Migrations
 
             modelBuilder.Entity("BigStore.Models.Category", b =>
                 {
+                    b.Navigation("CategoryChildren");
+
                     b.Navigation("Products");
                 });
 
@@ -1093,6 +1273,8 @@ namespace BigStore.Data.Migrations
                 {
                     b.Navigation("Carts");
 
+                    b.Navigation("FavoriteProducts");
+
                     b.Navigation("LikeProducts");
 
                     b.Navigation("OrderDetails");
@@ -1102,6 +1284,13 @@ namespace BigStore.Data.Migrations
                     b.Navigation("ProductReports");
 
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ReportStatus", b =>
+                {
+                    b.Navigation("ProductReports");
+
+                    b.Navigation("ReportProductReviews");
                 });
 
             modelBuilder.Entity("BigStore.Models.Shop", b =>
@@ -1114,6 +1303,8 @@ namespace BigStore.Data.Migrations
             modelBuilder.Entity("BigStore.Models.User", b =>
                 {
                     b.Navigation("Carts");
+
+                    b.Navigation("FavoriteProducts");
 
                     b.Navigation("LikeProducts");
 

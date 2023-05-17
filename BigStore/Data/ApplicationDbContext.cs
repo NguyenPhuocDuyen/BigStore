@@ -11,10 +11,12 @@ namespace BigStore.Data
         {
         }
 
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<User> User { get ; set; }
         public DbSet<Cart> Carts { get; set; }
+        public DbSet<Category> Categories { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
         public DbSet<DiscountType> DiscountTypes { get; set; }
+        public DbSet<FavoriteProduct> FavoriteProducts { get; set; }
         public DbSet<LikeProduct> LikeProducts { get; set; }
         public DbSet<News> Newss { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -24,7 +26,9 @@ namespace BigStore.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductReport> ProductReports { get; set; }
-        public DbSet<Review> Reviews { get; set; }
+        public DbSet<ProductReview> ProductReviews { get; set; }
+        public DbSet<ReportProductReview> ReportProductReviews { get; set; }
+        public DbSet<ReportStatus> ReportStatus { get; set; }
         public DbSet<Shop> Shops { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
 
@@ -36,16 +40,20 @@ namespace BigStore.Data
                .HasIndex(b => b.Slug)
                .IsUnique();
 
+            builder.Entity<Product>()
+               .HasIndex(b => b.Slug)
+               .IsUnique();
+
             builder.Entity<DiscountCode>()
                .HasIndex(b => b.Code)
                .IsUnique();
 
-            builder.Entity<OrderStatus>()
-               .HasIndex(b => b.Name)
-               .IsUnique();
+            //builder.Entity<OrderStatus>()
+            //   .HasIndex(b => b.Name)
+            //   .IsUnique();
 
             builder.Entity<Shop>()
-               .HasIndex(b => b.Name)
+               .HasIndex(b => b.ShopName)
                .IsUnique();
 
             foreach (var entityType in builder.Model.GetEntityTypes())

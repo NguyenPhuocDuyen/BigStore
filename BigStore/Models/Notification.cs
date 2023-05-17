@@ -17,6 +17,7 @@ namespace BigStore.Models
         public bool? IsRead { get; set; }
 
         public DateTime? CreateAt { get; set; } = DateTime.Now;
+        public DateTime? UpadteAt { get; set; } = DateTime.Now;
 
         public virtual User? User { get; set; }
     }

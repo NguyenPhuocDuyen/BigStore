@@ -18,6 +18,7 @@ namespace BigStore.Models
 
         [MaxLength(255)]
         public string? ImageUrl { get; set; }
+        public bool? ProductSubscriber { get; set; }
         public bool? IsDelete { get; set; }
         public int? ShopId { get; set; }
 
@@ -28,8 +29,9 @@ namespace BigStore.Models
         public virtual ICollection<Notification>? Notifications { get; set; }
         public virtual ICollection<Order>? Orders { get; set; }
         public virtual ICollection<ProductReport>? ProductReports { get; set; }
-        public virtual ICollection<Review>? Reviews { get; set; }
+        public virtual ICollection<ProductReview>? Reviews { get; set; }
         public virtual ICollection<UserAddress>? UserAddresss { get; set; }
         public virtual ICollection<News>? Newss { get; set; }
+        public virtual ICollection<FavoriteProduct>? FavoriteProducts { get; set; }
     }
 }
