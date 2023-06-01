@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "Reset Db";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="alert alert-danger">Có chắc chắn reset database?</p>
+<form method="post">
+    <button type="submit" class="btn btn-danger">Reset Db</button>
+    <hr />
+    <a asp-action="Index">Quản lý Db</a>
+</form>

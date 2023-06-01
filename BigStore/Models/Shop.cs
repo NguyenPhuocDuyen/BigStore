@@ -8,8 +8,9 @@ namespace BigStore.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public int UserId { get; set; }
+        //[Required]
+        [ScaffoldColumn(false)]
+        public string UserId { get; set; } = string.Empty;
 
         [Required, MaxLength(255)]
         public string ShopName { get; set; } = string.Empty;
@@ -30,7 +31,7 @@ namespace BigStore.Models
 
         public DateTime? CreateAt { get; set; } = DateTime.Now;
         public DateTime? UpdateAt { get; set; } = DateTime.Now;
-
+        
         public virtual User? User { get; set; }
 
         public virtual ICollection<Product>? Products { get; set; }

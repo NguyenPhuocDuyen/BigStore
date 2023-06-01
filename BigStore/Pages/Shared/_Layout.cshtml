@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using BigStore.Models.OtherModels;
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,7 +11,6 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
 
     @*<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
     @*<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>*@
@@ -31,9 +31,16 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Trang chủ</a>
+                            <a class="nav-link text-dark" asp-page="/Index">Trang chủ</a>
                         </li>
+                        @if (User.Identity.IsAuthenticated && User.IsInRole(RoleContent.Customer) && (!User.IsInRole(RoleContent.Seller)))
+                        {
+                            <li class="nav-item">
+                                <a asp-area="Customer" asp-controller="Home" asp-action="Create" class="nav-link text-dark">Đăng ký bán hàng</a>
+                            </li>
+                        }
                         <partial name="_AdminMenu" />
+                        <partial name="_SellerMenu" />
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

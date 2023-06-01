@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService authorizationService
+
+@{
+    var resultAuthorize = await authorizationService.AuthorizeAsync(this.User, "ShowSellerMenu");
+}
+
+@if (resultAuthorize.Succeeded)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-item nav-link dropdown-toggle active mr-md-2" href="#" 
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Seller
+        </a>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" asp-area="Seller" asp-controller="Shop" asp-action="Index">Shop Của Tôi</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" asp-area="Seller" asp-controller="Products" asp-action="Index" >Quản lý Sản Phẩm</a>
+            @*<a class="dropdown-item" asp-area="Seller" asp-controller="Shop" asp-action="Index" >Đơn Hàng</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" asp-area="Seller" asp-controller="Shop" asp-action="Index">Thống Kê</a>*@
+        </div>
+    </li>
+}

@@ -13,6 +13,7 @@
 <p>Database: @dbName</p>
 <p>Source: @connect.DataSource</p>
 <p>State: @connect.State</p>
+<a asp-action="ResetDb" class="btn btn-danger">Reset database</a>
 <hr/>
 @foreach(var migration in dbContext.Database.GetAppliedMigrations())
 {
@@ -46,8 +47,4 @@ else
             </li>
         }
     </ul>
-
-    <a class="btn btn-danger" asp-action="DeleteDb">
-        Xoá Database: @dbName
-    </a>
 }

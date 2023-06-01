@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using BigStore.Models.OtherModels;
 
 namespace BigStore.Areas.Identity.Pages.Account
 {
@@ -129,6 +130,9 @@ namespace BigStore.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("Đã tạo user mới với mật khẩu.");
+                    
+                    // add role customer for user
+                    _userManager.AddToRoleAsync(user, RoleContent.Customer).GetAwaiter().GetResult();
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     //Create token confirm email

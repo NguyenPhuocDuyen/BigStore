@@ -7,3 +7,36 @@
 <div class="text-center">
     <h1 class="display-4">Chào bạn tới trang bán hàng của BigStore</h1>
 </div>
+<br />
+
+<div class="">
+    @foreach (var item in Model.Categories)
+    {
+        <div>
+            <h2>@item.Title</h2>
+            <div class="row">
+                @if (item.CategoryChildren?.Count > 0)
+                {
+                    @foreach (var itemChlid in item.CategoryChildren)
+                    {
+                        <div class="col-4 col-md-3 col-lg-2 mb-4">
+                            <div class="card">
+                                <a href="#" class="text-decoration-none">
+                                    <img class="card-img-top" src="@itemChlid.ImageUrl" alt="category" />
+                                    <div class="card-body">
+                                        <p class="card-title">@itemChlid.Title</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <hr />
+    }
+    @foreach(var item in Model.Products)
+    {
+        <div>hi</div>
+    }
+</div>

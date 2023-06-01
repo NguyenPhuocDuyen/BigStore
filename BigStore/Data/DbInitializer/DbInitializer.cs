@@ -1,7 +1,11 @@
 ﻿using BigStore.Models;
 using BigStore.Models.OtherModels;
+using BigStore.Utility;
+using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto;
+using System;
 using System.Composition;
 
 namespace BigStore.Data.DbInitializer
@@ -21,7 +25,7 @@ namespace BigStore.Data.DbInitializer
             _userManager = userManager;
         }
 
-        public async void Initialize()
+        public void Initialize()
         {
             try
             {
@@ -30,18 +34,124 @@ namespace BigStore.Data.DbInitializer
                     _db.Database.Migrate();
                 }
             }
-            catch (Exception)
-            {
+            catch { }
 
+            AddDefaultDB();
+            AddUserDefault();
+            AddCategoryDefault();
+            AddProductOfAdminDefault();
+        }
+
+        private void AddProductOfAdminDefault()
+        {
+            var admin = _db.User.FirstOrDefault(x => x.Email == "admin@admin.com");
+            // add shop for admin
+            if (admin.ShopId == null)
+            {
+                Shop shop = new()
+                {
+                    UserId = admin.Id,
+                    User = admin,
+                    ShopName = "Admin Shop",
+                    Description = "Đây là shop của admin",
+                    Phone = "01234567889",
+                    Address = "Viet Nam",
+                    ImageUrl = "/images/shops/shop.jpg",
+                    CreateAt = DateTime.Now,
+                    UpdateAt = DateTime.Now
+                };
+                _db.Shops.Add(shop);
+
+                Faker<Product> productDefault = new();
+                productDefault.RuleFor(x => x.Shop, shop);
+                productDefault.RuleFor(x => x.Name, f => f.Lorem.Word());
+                productDefault.RuleFor(x => x.Description, f => $"<p>{f.Lorem.Paragraph()}</p>");
+                productDefault.RuleFor(x => x.Price, f => decimal.Round(f.Random.Decimal(1, 9999), 2));
+                productDefault.RuleFor(x => x.Quantity, f => f.Random.Int(1, 999));
+
+                var categories = _db.Categories.Where(x => x.ParentCategoryId == null).ToList();
+                foreach (var cate in categories)
+                {
+                    for (int j = 0; j < 10; j++)
+                    {
+                        Product p = productDefault.Generate();
+                        p.Category = cate;
+                        p.Name = $"{cate.Title} {p.Name} {j}";
+                        p.Slug = Slug.GenerateSlug(p.Name);
+                        _db.Products.Add(p);
+
+                        for (int k = 0; k < 2; k++)
+                        {
+                            ProductImage productImage = new()
+                            {
+                                Product = p,
+                                ImageUrl = "/images/noimage.jpg"
+                            };
+                            _db.ProductImages.Add(productImage);
+                        }
+                    }
+                }
+                _db.SaveChanges();
             }
+        }
 
-            if (!_roleManager.RoleExistsAsync(RoleContent.Admin).GetAwaiter().GetResult())
+        private void AddCategoryDefault()
+        {
+            if (!_db.Categories.Any())
             {
-                _roleManager.CreateAsync(new IdentityRole(RoleContent.Admin)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(RoleContent.Seller)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(RoleContent.Customer)).GetAwaiter().GetResult();
+                var phone = new Category
+                {
+                    ParentCategoryId = null,
+                    Title = "Điện Thoại",
+                    Description = "<p>Điện thoại liên quan</p>",
+                    Slug = Slug.GenerateSlug("Điện Thoại"),
+                    ImageUrl = "/images/noimage.jpg",
+                };
+                _db.Categories.Add(phone);
+                _db.SaveChanges();
 
-                _userManager.CreateAsync(new User
+                var noiThat = new Category
+                {
+                    ParentCategoryId = null,
+                    Title = "Nội Thất",
+                    Description = "<p>Nội thất liên quan</p>",
+                    Slug = Slug.GenerateSlug("Nội Thất"),
+                    ImageUrl = "/images/noimage.jpg",
+                };
+                _db.Categories.Add(noiThat);
+                _db.SaveChanges();
+
+                var categorySetDefault = new Faker<Category>();
+                categorySetDefault.RuleFor(x => x.Title, f => f.Lorem.Word());
+                categorySetDefault.RuleFor(x => x.Description, f => $"<p>Điện thoại: {f.Lorem.Paragraph()}</p>");
+                categorySetDefault.RuleFor(x => x.ImageUrl, "/images/noimage.jpg");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    Category category = categorySetDefault.Generate();
+                    category.ParentCategory = phone;
+                    category.Title = $"{phone.Title} {category.Title} {i}";
+                    category.Slug = Slug.GenerateSlug(category.Title);
+                    _db.Categories.Add(category);
+                };
+
+                for (int i = 0; i < 10; i++)
+                {
+                    Category category = categorySetDefault.Generate();
+                    category.ParentCategory = noiThat;
+                    category.Title = $"{noiThat.Title} {category.Title} {i}";
+                    category.Slug = Slug.GenerateSlug(category.Title);
+                    _db.Categories.Add(category);
+                };
+                _db.SaveChanges();
+            }
+        }
+
+        private void AddUserDefault()
+        {
+            if (!_db.User.Any())
+            {
+                var admin = new User
                 {
                     UserName = "admin@admin.com",
                     FullName = "Administrator",
@@ -52,53 +162,74 @@ namespace BigStore.Data.DbInitializer
                     IsDelete = false,
                     DOB = DateTime.Now,
                     ShopId = null,
-                }, "Admin123*").GetAwaiter().GetResult();
+                };
+                _userManager.CreateAsync(admin, "Admin123*").GetAwaiter().GetResult();
+                _userManager.AddToRolesAsync(admin, new List<string>() { RoleContent.Admin, RoleContent.Seller, RoleContent.Customer }).GetAwaiter().GetResult();
 
-                User? user = _db.User.FirstOrDefault(u => u.Email == "admin@admin.com");
-                if (user != null)
+                var userSetDefaults = new Faker<User>();
+                userSetDefaults.RuleFor(a => a.UserName, "customerdefault@gmail.com");
+                userSetDefaults.RuleFor(a => a.FullName, f => f.Name.FullName());
+                userSetDefaults.RuleFor(a => a.Email, "customerdefault@gmail.com");
+                userSetDefaults.RuleFor(a => a.EmailConfirmed, true);
+                userSetDefaults.RuleFor(a => a.ImageUrl, f => f.Internet.Avatar());
+
+                for (int i = 0; i < 20; i++)
                 {
-                    _userManager.AddToRoleAsync(user, RoleContent.Admin).GetAwaiter().GetResult();
+                    User u = userSetDefaults.Generate();
+                    u.UserName = i + u.UserName;
+                    u.FullName = i + u.FullName;
+                    u.Email = i + u.Email;
+                    _userManager.CreateAsync(u, "User123*").GetAwaiter().GetResult();
+                    _userManager.AddToRoleAsync(u, RoleContent.Customer).GetAwaiter().GetResult();
                 }
             }
+        }
 
-            if (_db.DiscountTypes.Any())
+        private void AddDefaultDB()
+        {
+            if (!_roleManager.RoleExistsAsync(RoleContent.Admin).GetAwaiter().GetResult())
             {
-                return;
+                _roleManager.CreateAsync(new IdentityRole(RoleContent.Admin)).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole(RoleContent.Seller)).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole(RoleContent.Customer)).GetAwaiter().GetResult();
+
+                List<DiscountType> discountTypes = new()
+                {
+                    new DiscountType { Name = DiscountTypeContent.ByPercent },
+                    new DiscountType { Name = DiscountTypeContent.ByValue }
+                };
+                _db.DiscountTypes.AddRange(discountTypes);
+                _db.SaveChanges();
+
+                List<OrderStatus> orderStatuss = new()
+                {
+                    new OrderStatus { Name = OrderStatusContent.Ordered },
+                    new OrderStatus { Name = OrderStatusContent.DeliveringOrders },
+                    new OrderStatus { Name = OrderStatusContent.OrderReceived },
+                    new OrderStatus { Name = OrderStatusContent.OrderRefund },
+                    new OrderStatus { Name = OrderStatusContent.OrderCanceled }
+                };
+                _db.OrderStatuses.AddRange(orderStatuss);
+                _db.SaveChanges();
+
+                List<ReportStatus> reportStatuses = new()
+                {
+                    new ReportStatus { Name = ReportStatusContent.Pending},
+                    new ReportStatus { Name = ReportStatusContent.Accept},
+                    new ReportStatus { Name = ReportStatusContent.Reject}
+                };
+                _db.ReportStatus.AddRange(reportStatuses);
+                _db.SaveChanges();
+
+                List<ProductInteractionStatus> productInteractionStatuses = new()
+                {
+                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Like},
+                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Dislike},
+                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Favourite}
+                };
+                _db.ProductInteractionStatuses.AddRange(productInteractionStatuses);
+                _db.SaveChanges();
             }
-
-            List<DiscountType> discounts = new()
-            {
-                new DiscountType { Name = DiscountTypeContent.ByPercent },
-                new DiscountType { Name = DiscountTypeContent.ByValue }
-            };
-            _db.DiscountTypes.AddRange(discounts);
-            _db.SaveChanges();
-
-            List<OrderStatus> orders = new()
-            {
-                new OrderStatus { Name = OrderStatusContent.Ordered },
-                new OrderStatus { Name = OrderStatusContent.DeliveringOrders },
-                new OrderStatus { Name = OrderStatusContent.OrderReceived },
-                new OrderStatus { Name = OrderStatusContent.OrderRefund },
-                new OrderStatus { Name = OrderStatusContent.OrderCanceled }
-            };
-            //orders.ForEach(order =>
-            //{
-            _db.OrderStatuses.AddRange(orders);
-            _db.SaveChanges();
-            //});
-
-            List<ReportStatus> reportStatuses = new()
-            {
-                new ReportStatus { Name = ReportStatusContent.Pending},
-                new ReportStatus { Name = ReportStatusContent.Accept},
-                new ReportStatus { Name = ReportStatusContent.Reject}
-            };
-            //reportStatuses.ForEach(reportStatus =>
-            //{
-            _db.ReportStatus.AddRange(reportStatuses);
-            _db.SaveChanges();
-            //});
         }
     }
 }

@@ -37,7 +37,7 @@
         <tr>
             <td>
                 @Html.Raw(prefix) 
-                <a asp-action="Details" asp-route-id="@item.Id">
+                <a asp-action="Details" asp-route-slug="@item.Slug">
                     @Html.DisplayFor(modelItem => item.Title)
                 </a>
             </td> 

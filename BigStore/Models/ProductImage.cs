@@ -13,8 +13,8 @@ namespace BigStore.Models
         [Required, StringLength(255)]
         public string ImageUrl { get; set; } = string.Empty;
 
-        public DateTime? CreatAt { get; set; } = DateTime.Now;
-        public bool? IsDelete { get; set; }
+        public DateTime? CreatAt { get; set; } = DateTime.UtcNow;
+        public bool? IsDelete { get; set; } = false;
 
         public virtual Product? Product { get; set; }
     }

@@ -114,6 +114,12 @@ namespace BigStore.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Thất bại, tài khoản không tồn tại hoặc sai username.");
+                    return Page();
+                }
+
                 if (user.PasswordHash is null)
                 {
                     ModelState.AddModelError(string.Empty, "Thất bại, tài khoản chỉ có thể đăng nhập bằng dịch vụ ngoài.");
@@ -130,7 +136,7 @@ namespace BigStore.Areas.Identity.Pages.Account
                     user = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
                     if (user != null)
                     {
-                        result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+                        result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                     }
                 }
 

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using BigStore.Models.OtherModels;
 
 namespace BigStore.Areas.Identity.Pages.Account
 {
@@ -211,6 +212,9 @@ namespace BigStore.Areas.Identity.Pages.Account
                     var resultNewUser = await _userManager.CreateAsync(newUser);
                     if (resultNewUser.Succeeded)
                     {
+                        // add role customer for user
+                        _userManager.AddToRoleAsync(newUser, RoleContent.Customer).GetAwaiter().GetResult();
+
                         await _userManager.AddLoginAsync(newUser, info);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 

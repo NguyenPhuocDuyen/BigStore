@@ -40,39 +40,22 @@ namespace BigStore.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string slug)
         {
-            if (id == null || _context.Categories == null)
+            if (_context.Categories == null)
             {
                 return NotFound();
             }
 
             var category = await _context.Categories
                 .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Slug == slug);
             if (category == null)
             {
                 return NotFound();
             }
 
             return View(category);
-        }
-
-        private void CreateSelectItems(List<Category> source, List<Category> des, int level)
-        {
-            string prefix = String.Concat(Enumerable.Repeat("—", level));
-            foreach (var category in source)
-            {
-                des.Add(new Category
-                {
-                    Id = category.Id,
-                    Title = prefix + " " + category.Title
-                });
-                if (category.CategoryChildren?.Count > 0)
-                {
-                    CreateSelectItems(category.CategoryChildren.ToList(), des, level + 1);
-                }
-            }
         }
 
         // GET: Admin/Categories/Create
@@ -93,7 +76,7 @@ namespace BigStore.Areas.Admin.Controllers
             });
 
             var items = new List<Category>();
-            CreateSelectItems(categories, items, 0);
+            SelectItem.CreateSelectItems(categories, items, 0);
 
             ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title");
             return View();
@@ -102,26 +85,13 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile ThumbnailFile)
+        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile? ThumbnailFile)
         {
             if (ModelState.IsValid)
             {
-                //save images
-                string fileName = "noimage.jpg";
-                if (ThumbnailFile != null && ThumbnailFile.Length > 0)
-                {
-                    fileName = CustomFile.GetUniqueFileName(ThumbnailFile.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories", fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await ThumbnailFile.CopyToAsync(stream);
-                    }
-                    category.ImageUrl = "/images/categories/" + fileName;
-                } else
-                {
-                    category.ImageUrl = "/images/" + fileName;
-                }
+                category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories");
+                //Generate slug if null
+                category.Slug ??= Slug.GenerateSlug(category.Title);
 
                 if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
                 category.CreateAt = DateTime.Now;
@@ -147,7 +117,7 @@ namespace BigStore.Areas.Admin.Controllers
             });
 
             var items = new List<Category>();
-            CreateSelectItems(categories, items, 0);
+            SelectItem.CreateSelectItems(categories, items, 0);
 
             ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
             return View(category);
@@ -182,7 +152,7 @@ namespace BigStore.Areas.Admin.Controllers
             });
 
             var items = new List<Category>();
-            CreateSelectItems(categories, items, 0);
+            SelectItem.CreateSelectItems(categories, items, 0);
 
             ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
             return View(category);
@@ -191,7 +161,7 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile ThumbnailFile)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile? ThumbnailFile)
         {
             if (id != category.Id)
             {
@@ -234,28 +204,18 @@ namespace BigStore.Areas.Admin.Controllers
                 checkCateIds(childCates.ToList());
             }
 
-
             if (ModelState.IsValid && canUpdate)
             {
                 try
                 {
                     //save images
-                    string fileName = "noimage.jpg";
-                    if (ThumbnailFile != null && ThumbnailFile.Length > 0)
-                    {
-                        fileName = CustomFile.GetUniqueFileName(ThumbnailFile.FileName);
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories", fileName);
+                    // Giữ nguyên giá trị cũ của ImageUrl nếu không có file được tải lên
+                    var existingCategory = _context.Categories.AsNoTracking()
+                        .FirstOrDefault(c => c.Id == category.Id);
+                    category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories", existingCategory.ImageUrl);
 
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await ThumbnailFile.CopyToAsync(stream);
-                        }
-                        category.ImageUrl = "/images/categories/" + fileName;
-                    }
-                    else
-                    {
-                        category.ImageUrl = "/images/" + fileName;
-                    }
+                    //Generate slug if null
+                    category.Slug ??= Slug.GenerateSlug(category.Title);
 
                     if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
                     category.UpdateAt = DateTime.Now;
@@ -292,7 +252,7 @@ namespace BigStore.Areas.Admin.Controllers
             });
 
             var items = new List<Category>();
-            CreateSelectItems(categories, items, 0);
+            SelectItem.CreateSelectItems(categories, items, 0);
 
             ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
             return View(category);

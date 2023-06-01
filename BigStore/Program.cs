@@ -53,7 +53,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 
     // Cấu hình Lockout - khóa user
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1); // Khóa 1 phút
-    options.Lockout.MaxFailedAccessAttempts = 3; // Thất bại 5 lầ thì khóa
+    options.Lockout.MaxFailedAccessAttempts = 5; // Thất bại 5 lầ thì khóa
     options.Lockout.AllowedForNewUsers = true;
 
     // Cấu hình về User.
@@ -137,6 +137,11 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ShowAdminMenu", policybuilder =>
     {
         policybuilder.RequireRole(RoleContent.Admin);
+    });
+
+    options.AddPolicy("ShowSellerMenu", policybuilder =>
+    {
+        policybuilder.RequireRole(RoleContent.Seller);
     });
 });
 // validation file image

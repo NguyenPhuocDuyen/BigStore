@@ -77,7 +77,6 @@ namespace BigStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Slug")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -94,9 +93,48 @@ namespace BigStore.Data.Migrations
                     b.HasIndex("ParentCategoryId");
 
                     b.HasIndex("Slug")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Slug] IS NOT NULL");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("BigStore.Models.Chat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Chats");
                 });
 
             modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
@@ -191,32 +229,6 @@ namespace BigStore.Data.Migrations
                     b.ToTable("FavoriteProducts");
                 });
 
-            modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId1");
-
-                    b.ToTable("LikeProducts");
-                });
-
             modelBuilder.Entity("BigStore.Models.News", b =>
                 {
                     b.Property<int>("Id")
@@ -234,6 +246,12 @@ namespace BigStore.Data.Migrations
 
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("bit");
+
+                    b.Property<bool?>("IsPublish")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Thumbnail")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -399,7 +417,7 @@ namespace BigStore.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("CreateAt")
@@ -473,6 +491,52 @@ namespace BigStore.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ProductInteraction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductInteractionStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductInteractionStatusId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProductInteractions");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ProductInteractionStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductInteractionStatuses");
                 });
 
             modelBuilder.Entity("BigStore.Models.ProductReport", b =>
@@ -650,8 +714,9 @@ namespace BigStore.Data.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -956,6 +1021,25 @@ namespace BigStore.Data.Migrations
                     b.Navigation("ParentCategory");
                 });
 
+            modelBuilder.Entity("BigStore.Models.Chat", b =>
+                {
+                    b.HasOne("BigStore.Models.User", "Receiver")
+                        .WithMany("Receivers")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.User", "Sender")
+                        .WithMany("Senders")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("BigStore.Models.DiscountCode", b =>
                 {
                     b.HasOne("BigStore.Models.DiscountType", "DiscountType")
@@ -980,23 +1064,6 @@ namespace BigStore.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BigStore.Models.LikeProduct", b =>
-                {
-                    b.HasOne("BigStore.Models.Product", "Product")
-                        .WithMany("LikeProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BigStore.Models.User", "User")
-                        .WithMany("LikeProducts")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("Product");
 
@@ -1069,9 +1136,7 @@ namespace BigStore.Data.Migrations
                 {
                     b.HasOne("BigStore.Models.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("BigStore.Models.Shop", "Shop")
                         .WithMany("Products")
@@ -1093,6 +1158,33 @@ namespace BigStore.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ProductInteraction", b =>
+                {
+                    b.HasOne("BigStore.Models.Product", "Product")
+                        .WithMany("Interactions")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.ProductInteractionStatus", "Status")
+                        .WithMany("Interactions")
+                        .HasForeignKey("ProductInteractionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BigStore.Models.User", "User")
+                        .WithMany("Interactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BigStore.Models.ProductReport", b =>
@@ -1264,7 +1356,7 @@ namespace BigStore.Data.Migrations
 
                     b.Navigation("FavoriteProducts");
 
-                    b.Navigation("LikeProducts");
+                    b.Navigation("Interactions");
 
                     b.Navigation("OrderDetails");
 
@@ -1273,6 +1365,11 @@ namespace BigStore.Data.Migrations
                     b.Navigation("ProductReports");
 
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("BigStore.Models.ProductInteractionStatus", b =>
+                {
+                    b.Navigation("Interactions");
                 });
 
             modelBuilder.Entity("BigStore.Models.ReportStatus", b =>
@@ -1295,7 +1392,7 @@ namespace BigStore.Data.Migrations
 
                     b.Navigation("FavoriteProducts");
 
-                    b.Navigation("LikeProducts");
+                    b.Navigation("Interactions");
 
                     b.Navigation("Newss");
 
@@ -1305,7 +1402,11 @@ namespace BigStore.Data.Migrations
 
                     b.Navigation("ProductReports");
 
+                    b.Navigation("Receivers");
+
                     b.Navigation("Reviews");
+
+                    b.Navigation("Senders");
 
                     b.Navigation("UserAddresss");
                 });
