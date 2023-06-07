@@ -1,4 +1,4 @@
-﻿@model BigStore.Models.Category
+﻿@model BigStore.BusinessObject.Category
 
 @{
     ViewData["Title"] = "Chỉnh sửa danh mục";
@@ -50,7 +50,7 @@
 </div>
 
 @{
-    var summernote = new BigStore.Models.OtherModels.Summernote("#Description");
+    var summernote = new BigStore.BusinessObject.OtherModels.Summernote("#Description");
 }
 <partial name="_Summernote" model="summernote" />
 

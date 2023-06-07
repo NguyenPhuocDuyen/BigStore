@@ -1,4 +1,4 @@
-﻿using BigStore.Data;
+﻿using BigStore.DataAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

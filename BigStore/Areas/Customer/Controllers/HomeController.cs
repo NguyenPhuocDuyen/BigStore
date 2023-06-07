@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BigStore.Data;
-using BigStore.Models;
+using BigStore.DataAccess;
+using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Identity;
 using BigStore.Utility;
 using Microsoft.AspNetCore.Authorization;
-using BigStore.Models.OtherModels;
+using BigStore.BusinessObject.OtherModels;
 
 namespace BigStore.Areas.Customer.Controllers
 {

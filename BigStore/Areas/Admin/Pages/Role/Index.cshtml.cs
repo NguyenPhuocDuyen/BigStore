@@ -1,5 +1,5 @@
-using BigStore.Data;
-using BigStore.Models.OtherModels;
+using BigStore.DataAccess;
+using BigStore.BusinessObject.OtherModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

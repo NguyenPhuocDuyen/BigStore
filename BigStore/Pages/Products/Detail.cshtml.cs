@@ -1,5 +1,5 @@
-using BigStore.Data;
-using BigStore.Models;
+using BigStore.DataAccess;
+using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;

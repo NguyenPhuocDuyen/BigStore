@@ -1,4 +1,4 @@
-﻿using BigStore.Models.OtherModels;
+﻿using BigStore.BusinessObject.OtherModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;

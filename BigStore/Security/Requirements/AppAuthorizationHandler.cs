@@ -1,4 +1,4 @@
-﻿using BigStore.Models;
+﻿using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using NuGet.Protocol;

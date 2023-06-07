@@ -1,20 +1,14 @@
-using BigStore.Data;
-using BigStore.Data.DbInitializer;
-using BigStore.Middleware;
-using BigStore.Models;
-using BigStore.Models.OtherModels;
+using BigStore.DataAccess;
+using BigStore.DataAccess.DbInitializer;
+using BigStore.BusinessObject;
+using BigStore.BusinessObject.OtherModels;
 using BigStore.Security.Requirements;
 using BigStore.Services;
 using BigStore.Utility;
-using BigStore.Validation;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using System;
-using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
