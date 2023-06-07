@@ -1,0 +1,84 @@
+﻿@page
+@model BigStore.Pages.Products.IndexModel
+@{
+}
+<div>
+</div>
+<div class="row">
+    <div class="col-2">
+        @if (Model.Categories?.Count > 0)
+        {
+            <h4>Tất cả danh mục</h4>
+            <div>
+                <a asp-route-categorySlug="@Model.CategorySlug?.Slug">@Model.CategorySlug?.Title</a>
+                @foreach (var cate in Model.Categories)
+                {
+                    <a asp-route-categorySlug="@Model.CategorySlug?.Slug">@cate.Title</a>
+                }
+            </div>
+            <hr />
+        }
+        <div class="mt-2">
+            <form>
+                <input name="minPrice" type="number" placeholder="min price" min="0" />
+                <input name="maxPrice" type="number" placeholder="max price" min="0" />
+                <input name="sortBy" value="price" hidden />
+                <input type="submit" class="btn btn-primary mt-2" value="Áp dụng" />
+            </form>
+        </div>
+        <hr />
+
+        <div class="mt-2">
+            <h4>Đánh giá</h4>
+            <div>
+                @for (var i = 0; i < 5; i++)
+                {
+                    <a asp-route-star="@(i+1)" class="btn d-inline-block">
+                        <p>@(new string('X', i+1)) trở lên</p>
+                    </a>
+                }
+            </div>
+        </div>
+        <hr />
+
+    </div>
+    <div class="col-10">
+        @if (!string.IsNullOrEmpty(Model.Search))
+        {
+            <p>Kết quả tìm kiếm cho từ khoá @Model.Search</p>
+        }
+        <div class="row justify-content-between">
+            <div class="col-8">
+                <div class="p-2 bg-gray-white">
+                    <p class="my-auto d-inline-block">Sắp xếp</p>
+                    <a asp-route-sortBy="pop" class="btn">Phổ biến</a>
+                    <a asp-route-sortBy="time" class="btn">Mới Nhất</a>
+                    <a asp-route-sortBy="sales" class="btn">Bán Chạy</a>
+                    <a asp-route-orderBy="asc" class="btn">Giá: Thấp đến Cao</a>
+                    <a asp-route-orderBy="desc" class="btn">Giá: Cao đến Thấp</a>
+                </div>
+            </div>
+            <div class="col-2 row justify-content-between align-items-center">
+                <a class="col-4 btn">Pre</a>
+                <p class="col-4 my-auto">1/2</p>
+                <a class="col-4 btn">Next</a>
+            </div>
+        </div>
+        <div class="row">
+            @foreach (var item in Model.Products)
+            {
+                <div class="col-3">
+                    <div class="card">
+                        <a asp-page="/products/detail" asp-route-slug="@item.Slug" class="text-decoration-none">
+                            <img class="card-img-top" src="@item.ProductImages?.FirstOrDefault()?.ImageUrl" alt="category" />
+                            <div class="card-body">
+                                <p class="card-title">@item.Name</p>
+                                <p class="card-subtitle">Giá: @item.Price VND</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

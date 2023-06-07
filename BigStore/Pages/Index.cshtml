@@ -9,34 +9,41 @@
 </div>
 <br />
 
-<div class="">
-    @foreach (var item in Model.Categories)
-    {
-        <div>
-            <h2>@item.Title</h2>
-            <div class="row">
-                @if (item.CategoryChildren?.Count > 0)
-                {
-                    @foreach (var itemChlid in item.CategoryChildren)
-                    {
-                        <div class="col-4 col-md-3 col-lg-2 mb-4">
-                            <div class="card">
-                                <a href="#" class="text-decoration-none">
-                                    <img class="card-img-top" src="@itemChlid.ImageUrl" alt="category" />
-                                    <div class="card-body">
-                                        <p class="card-title">@itemChlid.Title</p>
-                                    </div>
-                                </a>
-                            </div>
+<div>
+    <h2>Danh mục</h2>
+    <div class="row">
+        @foreach (var item in Model.Categories)
+        {
+            <div class="col-3 col-md-2 col-lg-1 mb-4">
+                <div class="card">
+                    <a asp-page="/products/index" asp-route-categorySlug="@item.Slug" class="text-decoration-none">
+                        <img class="card-img-top" src="@item.ImageUrl" alt="category" />
+                        <div class="card-body">
+                            <p class="card-title">@item.Title</p>
                         </div>
-                    }
-                }
+                    </a>
+                </div>
             </div>
-        </div>
-        <hr />
-    }
-    @foreach(var item in Model.Products)
-    {
-        <div>hi</div>
-    }
+        }
+    </div>
+</div>
+<hr />
+<div>
+    <h1>Sản phẩm hiện có:</h1>
+    <div class="row">
+        @foreach (var item in Model.Products)
+        {
+            <div class="col-6 col-md-3 col-lg-2 mb-4">
+                <div class="card">
+                    <a asp-page="/products/detail" asp-route-slug="@item.Slug" class="text-decoration-none">
+                        <img class="card-img-top" src="@item.ProductImages.FirstOrDefault().ImageUrl" alt="category" />
+                        <div class="card-body">
+                            <p class="card-title">@item.Name</p>
+                            <p class="card-subtitle">Giá: @item.Price VND</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
 </div>

@@ -46,7 +46,7 @@ namespace BigStore.Data.DbInitializer
         {
             var admin = _db.User.FirstOrDefault(x => x.Email == "admin@admin.com");
             // add shop for admin
-            if (admin.ShopId == null)
+            if (admin is not null && admin.ShopId is null)
             {
                 Shop shop = new()
                 {
@@ -58,9 +58,9 @@ namespace BigStore.Data.DbInitializer
                     Address = "Viet Nam",
                     ImageUrl = "/images/shops/shop.jpg",
                     CreateAt = DateTime.Now,
-                    UpdateAt = DateTime.Now
+                    UpdateAt = DateTime.Now,
+                    Products = new List<Product>()
                 };
-                _db.Shops.Add(shop);
 
                 Faker<Product> productDefault = new();
                 productDefault.RuleFor(x => x.Shop, shop);
@@ -78,7 +78,7 @@ namespace BigStore.Data.DbInitializer
                         p.Category = cate;
                         p.Name = $"{cate.Title} {p.Name} {j}";
                         p.Slug = Slug.GenerateSlug(p.Name);
-                        _db.Products.Add(p);
+                        p.ProductImages = new List<ProductImage>();
 
                         for (int k = 0; k < 2; k++)
                         {
@@ -87,10 +87,13 @@ namespace BigStore.Data.DbInitializer
                                 Product = p,
                                 ImageUrl = "/images/noimage.jpg"
                             };
-                            _db.ProductImages.Add(productImage);
+                            //_db.ProductImages.Add(productImage);
+                            p.ProductImages.Add(productImage);
                         }
+                        shop.Products.Add(p);
                     }
                 }
+                _db.Shops.Add(shop);
                 _db.SaveChanges();
             }
         }
@@ -99,47 +102,17 @@ namespace BigStore.Data.DbInitializer
         {
             if (!_db.Categories.Any())
             {
-                var phone = new Category
-                {
-                    ParentCategoryId = null,
-                    Title = "Điện Thoại",
-                    Description = "<p>Điện thoại liên quan</p>",
-                    Slug = Slug.GenerateSlug("Điện Thoại"),
-                    ImageUrl = "/images/noimage.jpg",
-                };
-                _db.Categories.Add(phone);
-                _db.SaveChanges();
-
-                var noiThat = new Category
-                {
-                    ParentCategoryId = null,
-                    Title = "Nội Thất",
-                    Description = "<p>Nội thất liên quan</p>",
-                    Slug = Slug.GenerateSlug("Nội Thất"),
-                    ImageUrl = "/images/noimage.jpg",
-                };
-                _db.Categories.Add(noiThat);
-                _db.SaveChanges();
-
                 var categorySetDefault = new Faker<Category>();
                 categorySetDefault.RuleFor(x => x.Title, f => f.Lorem.Word());
                 categorySetDefault.RuleFor(x => x.Description, f => $"<p>Điện thoại: {f.Lorem.Paragraph()}</p>");
                 categorySetDefault.RuleFor(x => x.ImageUrl, "/images/noimage.jpg");
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     Category category = categorySetDefault.Generate();
-                    category.ParentCategory = phone;
-                    category.Title = $"{phone.Title} {category.Title} {i}";
-                    category.Slug = Slug.GenerateSlug(category.Title);
-                    _db.Categories.Add(category);
-                };
-
-                for (int i = 0; i < 10; i++)
-                {
-                    Category category = categorySetDefault.Generate();
-                    category.ParentCategory = noiThat;
-                    category.Title = $"{noiThat.Title} {category.Title} {i}";
+                    category.ParentCategoryId = null;
+                    //category.ParentCategory = phone;
+                    category.Title = $"{category.Title} {i}";
                     category.Slug = Slug.GenerateSlug(category.Title);
                     _db.Categories.Add(category);
                 };

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Configuration;
 
@@ -198,5 +199,4 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 //app.MapHub<ChatHub>("/chathub");
-
 app.Run();

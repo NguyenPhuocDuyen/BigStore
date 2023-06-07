@@ -1,0 +1,54 @@
+﻿@page
+@model BigStore.Pages.Products.DetailModel
+@{
+}
+<div class="row py-2">
+    <div class="col-5">
+        <div>
+            <img class="card-img-top" src="@Model.Product?.ProductImages.FirstOrDefault().ImageUrl" alt="anh" />
+            <div class="row mt-3">
+                @foreach (var img in Model.Product.ProductImages)
+                {
+                    <div class="col-2">
+                        <img src="@img.ImageUrl" alt="anh" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-7">
+        <h3 class="">
+            Tên: @Model.Product.Name
+        </h3>
+        <p>Giá: @Model.Product.Price đ</p>
+        <div class="row">
+            <p class="col-2">Số lượng:</p>
+            <input id="quantityBuy" class="col-3" type="number" min="1" max="@Model.Product.Quantity" value="1" />
+            <p class="col">@Model.Product.Quantity sẵn phẩm có sẵn</p>
+        </div>
+        <div class="mt-4">
+            <button id="addCart" data-id="@Model.Product.Id" class="btn btn-sub">Thêm vào giỏ hàng</button>
+            <button class="btn btn-main">Mua ngay</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //add product to cart
+        var button = document.querySelector('#addCart');
+
+        button.addEventListener('click', function () {
+            var productId = this.dataset.id;
+            var quantity = $('#quantityBuy').val();
+
+            ajaxRequest(urlCart, 'POST', JSON.stringify({ ProductId: productId, Quantity: quantity }), function (xhr) {
+                xhr.setRequestHeader('Authorization', token);
+            }, function (response) {
+                toastr.success(messSuccess);
+            }, function (jqXHR, textStatus, errorThrown) {
+                toastr.error(messError);
+            });
+        });
+    });
+</script>

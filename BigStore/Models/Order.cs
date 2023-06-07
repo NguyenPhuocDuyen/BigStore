@@ -11,7 +11,7 @@ namespace BigStore.Models
         [Required]
         public int OrderStatusId { get; set; }
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         [Required]
         public int DiscountCodeId { get; set; }
 

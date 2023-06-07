@@ -9,7 +9,7 @@ namespace BigStore.Models
         public int Id { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         [Required, Column(TypeName = "nvarchar(max)")]
         public string Message { get; set; } = string.Empty;
