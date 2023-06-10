@@ -3,8 +3,8 @@ using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
-using System.Text;
+using System.Globalization;
+using BigStore.Utility;
 
 namespace BigStore.Pages.Products
 {
@@ -17,44 +17,97 @@ namespace BigStore.Pages.Products
             _dbContext = dbContext;
         }
 
-        [BindProperty]
-        public List<Product> Products { get; set; } = new();
+        public PaginatedList<Product> ProductsPaging { get; set; }
 
         public List<Category>? Categories { get; set; }
-        public Category? CategorySlug { get; set; }
+        public Category? Category { get; set; }
+
+        public string? CategorySlug { get; set; }
         public string? Search { get; set; }
+        public string? SortBy { get; set; }
+        public int? MinPrice { get; set; }
+        public int? MaxPrice { get; set; }
+        public string? OrderBy { get; set; }
+        public int? PageIndex { get; set; }
 
-        public void OnGet(string categorySlug, string search, string sortBy, int minPrice, int maxPrice, string orderBy)
+        public IActionResult OnGetAsync(string categorySlug,
+            string search,
+            string sortBy,
+            int minPrice, int maxPrice,
+            string orderBy,
+            int pageIndex = 1)
         {
+            // lấy ra danh sách sản phẩm
+            var query = _dbContext.Products
+                .Include(x => x.Category)
+                .ThenInclude(x => x.ParentCategory)
+                .ThenInclude(x => x.ParentCategory)
+                .Include(x => x.ProductImages)
+                .AsQueryable();
 
-            var query = _dbContext.Products.Include(x => x.Category).Include(x => x.ProductImages).AsQueryable();
-
+            // tìm kiếm sản phẩm theo search
             if (!string.IsNullOrEmpty(search))
             {
-                Search = search;
                 query = query.Where(x => x.Name.Contains(search));
             }
 
+            // lấy ra danh mục nếu tìm theo danh mục
             if (!string.IsNullOrEmpty(categorySlug))
             {
-                CategorySlug = _dbContext.Categories.FirstOrDefault(x => x.Slug.Equals(categorySlug));
-                Categories = _dbContext.Categories
+                // lấy danh mục được tìm
+                var cateCurrent = _dbContext.Categories
                     .Include(x => x.ParentCategory)
-                    .ThenInclude(x => x.ParentCategory)
-                    .Where(x => x.ParentCategory.Slug.Equals(categorySlug) && x.ParentCategory.ParentCategoryId == null)
-                    .ToList();
+                    .ThenInclude(x => x.CategoryChildren)
+                    .Include(x => x.CategoryChildren)
+                    .FirstOrDefault(x => x.Slug == categorySlug);
 
-                query = query.Where(x => x.Category.Slug == categorySlug);
+                // trả về trang chủ nếu không thấy danh mục
+                if (cateCurrent is null)
+                    return RedirectToPage("/Index");
+
+                // ParentCategoryId == null đồng nghĩa là tìm bằng danh mục chính level 1
+                if (cateCurrent.ParentCategoryId == null)
+                {
+                    // hiển thị cột loc danh mục là nó và các con của nó
+                    Category = cateCurrent;
+                    Categories = cateCurrent.CategoryChildren.ToList();
+                }
+                else
+                {
+                    // ParentCategoryId != null đồng nghĩa là tìm bằng danh mục phụ level 2
+                    // hiển thị cột loc danh mục là cha nó và các con của cha nó (bao gồm chính nó)
+                    Category = cateCurrent.ParentCategory;
+                    Categories = cateCurrent.ParentCategory.CategoryChildren.ToList();
+                }
+
+                // lọc sản phẩm theo danh mục chính level 1, level 2 hoặc level 3
+                // nhưng cột lọc danh mục chỉ hiển thị level 1 và 2
+                // (lưu ý sản phẩm thuộc danh mục phụ level 3)
+                query = query
+                    .Where(x => x.Category.Slug == categorySlug
+                    || x.Category.ParentCategory.Slug == categorySlug
+                    || x.Category.ParentCategory.ParentCategory.Slug == categorySlug);
             }
+
+            if (maxPrice != 0)
+                if (minPrice < maxPrice)
+                {
+                    query = query.Where(x => x.Price > minPrice && x.Price < maxPrice);
+                }
 
             switch (sortBy)
             {
                 case "price":
-                    if (maxPrice != 0)
-                        if (minPrice < maxPrice)
-                        {
-                            query = query.Where(x => x.Price > minPrice && x.Price < maxPrice);
-                        }
+                    switch (orderBy)
+                    {
+                        case "asc":
+                            query = query.OrderBy(x => x.Price);
+                            break;
+                        case "desc":
+                            query = query.OrderByDescending(x => x.Price);
+                            break;
+                        default: break;
+                    }
                     break;
                 case "star": break;
                 case "pop": break;
@@ -64,19 +117,18 @@ namespace BigStore.Pages.Products
                 case "sales": break;
                 default: break;
             }
+            var pageSize = 24;
+            ProductsPaging = PaginatedList<Product>.CreateAsync(query.AsNoTracking().ToList(), pageIndex, pageSize);
 
-            switch (orderBy)
-            {
-                case "asc":
-                    query = query.OrderBy(x => x.Price);
-                    break;
-                case "desc":
-                    query = query.OrderByDescending(x => x.Price);
-                    break;
-                default: break;
-            }
+            CategorySlug = categorySlug;
+            Search = search;
+            SortBy = sortBy;
+            MinPrice = minPrice;
+            MaxPrice = maxPrice;
+            OrderBy = orderBy;
+            PageIndex = pageIndex;
 
-            Products = query.ToList();
+            return Page();
         }
 
         // Phương thức chuyển đổi chữ có dấu thành không dấu bỏ ký tự đặc biệt

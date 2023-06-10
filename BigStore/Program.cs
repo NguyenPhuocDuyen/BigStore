@@ -110,7 +110,7 @@ builder.Services.AddSession(optons =>
 //builder.Services.AddSingleton<SecondMiddleware>();
 builder.Services.AddSingleton<IdentityErrorDescriber, AppIdentityErrorDescriber>();
 builder.Services.AddTransient<IAuthorizationHandler, AppAuthorizationHandler>();
-
+    
 // add policy
 builder.Services.AddAuthorization(options =>
 {

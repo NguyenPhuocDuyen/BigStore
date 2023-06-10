@@ -10,19 +10,25 @@
         {
             <h4>Tất cả danh mục</h4>
             <div>
-                <a asp-route-categorySlug="@Model.CategorySlug?.Slug">@Model.CategorySlug?.Title</a>
+                <a asp-route-categorySlug="@Model.Category?.Slug">@Model.Category?.Title</a>
                 @foreach (var cate in Model.Categories)
                 {
-                    <a asp-route-categorySlug="@Model.CategorySlug?.Slug">@cate.Title</a>
+                    <a class="my-3" asp-route-categorySlug="@cate.Slug">@cate.Title</a>
                 }
             </div>
             <hr />
         }
         <div class="mt-2">
+            <h4>Khoảng giá</h4>
             <form>
-                <input name="minPrice" type="number" placeholder="min price" min="0" />
-                <input name="maxPrice" type="number" placeholder="max price" min="0" />
-                <input name="sortBy" value="price" hidden />
+                <input name="categorySlug" value="@Model.CategorySlug" hidden />
+                <input name="search" value="@Model.Search" hidden />
+                <input name="sortBy" value="@Model.SortBy" hidden />
+                <input name="orderBy" value="@Model.OrderBy" hidden />
+
+                <input name="minPrice" type="number" value="@Model.MinPrice" placeholder="min price" min="0" />
+                <input name="maxPrice" type="number" value="@Model.MaxPrice" placeholder="max price" min="0" />
+
                 <input type="submit" class="btn btn-primary mt-2" value="Áp dụng" />
             </form>
         </div>
@@ -33,9 +39,7 @@
             <div>
                 @for (var i = 0; i < 5; i++)
                 {
-                    <a asp-route-star="@(i+1)" class="btn d-inline-block">
-                        <p>@(new string('X', i+1)) trở lên</p>
-                    </a>
+                    <a asp-route-star="@(i+1)" class="my-3">@(new string('X', i + 1)) trở lên</a>
                 }
             </div>
         </div>
@@ -52,22 +56,63 @@
                 <div class="p-2 bg-gray-white">
                     <p class="my-auto d-inline-block">Sắp xếp</p>
                     <a asp-route-sortBy="pop" class="btn">Phổ biến</a>
-                    <a asp-route-sortBy="time" class="btn">Mới Nhất</a>
+
+                    <a asp-route-categorySlug="@Model.CategorySlug"
+                       asp-route-search="@Model.Search"
+                       asp-route-sortBy="time"
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-maxPrice="@Model.MaxPrice"
+                       asp-route-orderBy="@Model.OrderBy"
+                       class="btn">Mới Nhất</a>
+
                     <a asp-route-sortBy="sales" class="btn">Bán Chạy</a>
-                    <a asp-route-orderBy="asc" class="btn">Giá: Thấp đến Cao</a>
-                    <a asp-route-orderBy="desc" class="btn">Giá: Cao đến Thấp</a>
+
+                    <a asp-route-categorySlug="@Model.CategorySlug"
+                       asp-route-search="@Model.Search"
+                       asp-route-orderBy="asc"
+                       asp-route-sortBy="price"
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-maxPrice="@Model.MaxPrice"
+                       class="btn">Giá: Thấp đến Cao</a>
+
+                    <a asp-route-categorySlug="@Model.CategorySlug"
+                       asp-route-search="@Model.Search"
+                       asp-route-orderBy="desc"
+                       asp-route-sortBy="price"
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-maxPrice="@Model.MaxPrice"
+                       class="btn">Giá: Cao đến Thấp</a>
+
                 </div>
             </div>
+            @{
+                var prevDisabled = !Model.ProductsPaging.HasPreviousPage ? "disabled" : "";
+                var nextDisabled = !Model.ProductsPaging.HasNextPage ? "disabled" : "";
+            }
             <div class="col-2 row justify-content-between align-items-center">
-                <a class="col-4 btn">Pre</a>
-                <p class="col-4 my-auto">1/2</p>
-                <a class="col-4 btn">Next</a>
+                <a asp-route-categorySlug="@Model.CategorySlug"
+                   asp-route-search="@Model.Search"
+                   asp-route-orderBy="@Model.OrderBy"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-maxPrice="@Model.MaxPrice"
+                   asp-route-pageIndex="@(Model.PageIndex-1)"
+                   class="col-4 btn @prevDisabled">Pre</a>
+                <p class="col-4 my-auto">@Model.PageIndex/@Model.ProductsPaging.TotalPages</p>
+                <a asp-route-categorySlug="@Model.CategorySlug"
+                   asp-route-search="@Model.Search"
+                   asp-route-orderBy="@Model.OrderBy"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-maxPrice="@Model.MaxPrice"
+                   asp-route-pageIndex="@(Model.PageIndex+1)"
+                   class="col-4 btn @nextDisabled">Next</a>
             </div>
         </div>
         <div class="row">
-            @foreach (var item in Model.Products)
+            @foreach (var item in Model.ProductsPaging)
             {
-                <div class="col-3">
+                <div class="col-2 mb-4">
                     <div class="card">
                         <a asp-page="/products/detail" asp-route-slug="@item.Slug" class="text-decoration-none">
                             <img class="card-img-top" src="@item.ProductImages?.FirstOrDefault()?.ImageUrl" alt="category" />

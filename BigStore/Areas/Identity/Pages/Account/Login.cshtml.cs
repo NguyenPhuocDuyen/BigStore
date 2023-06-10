@@ -143,6 +143,16 @@ namespace BigStore.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("Đăng nhập thành công.");
+
+                    //// set token into cookie
+                    //Response.Cookies.Append("used_id", user.Id, new CookieOptions
+                    //{
+                    //    HttpOnly = false,
+                    //    SameSite = SameSiteMode.None,
+                    //    Secure = true,
+                    //    Expires = DateTimeOffset.UtcNow.AddDays(1)
+                    //});
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

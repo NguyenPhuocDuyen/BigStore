@@ -1,0 +1,9 @@
+﻿@model List<Cart>
+@{
+    ViewData["Title"] = "Tạo đơn hàng";
+}
+<h1>@ViewData["Title"]</h1>
+@foreach (var item in Model)
+{
+    <p>@item.Quantity</p>
+}

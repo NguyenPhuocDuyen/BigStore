@@ -61,19 +61,19 @@ namespace BigStore.DataAccess.DbInitializer
 
                 Faker<Product> productDefault = new();
                 productDefault.RuleFor(x => x.Shop, shop);
-                productDefault.RuleFor(x => x.Name, f => f.Lorem.Word());
+                productDefault.RuleFor(x => x.Name, f => "Product " + f.Lorem.Word());
                 productDefault.RuleFor(x => x.Description, f => $"<p>{f.Lorem.Paragraph()}</p>");
                 productDefault.RuleFor(x => x.Price, f => decimal.Round(f.Random.Decimal(1, 9999), 2));
                 productDefault.RuleFor(x => x.Quantity, f => f.Random.Int(1, 999));
 
-                var categories = _db.Categories.Where(x => x.ParentCategoryId == null).ToList();
+                var categories = _db.Categories.Include(x => x.CategoryChildren).Where(x => x.CategoryChildren.Count == 0).ToList();
                 foreach (var cate in categories)
                 {
-                    for (int j = 0; j < 10; j++)
+                    for (int j = 0; j < 2; j++)
                     {
                         Product p = productDefault.Generate();
                         p.Category = cate;
-                        p.Name = $"{cate.Title} {p.Name} {j}";
+                        p.Name = $"{cate.Title} - {p.Name} {j}";
                         p.Slug = Slug.GenerateSlug(p.Name);
                         p.ProductImages = new List<ProductImage>();
 
@@ -104,13 +104,35 @@ namespace BigStore.DataAccess.DbInitializer
                 categorySetDefault.RuleFor(x => x.Description, f => $"<p>Điện thoại: {f.Lorem.Paragraph()}</p>");
                 categorySetDefault.RuleFor(x => x.ImageUrl, "/images/noimage.jpg");
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     Category category = categorySetDefault.Generate();
                     category.ParentCategoryId = null;
-                    //category.ParentCategory = phone;
-                    category.Title = $"{category.Title} {i}";
+                    category.Title = $"Category level 1-{i}";
                     category.Slug = Slug.GenerateSlug(category.Title);
+                    category.CategoryChildren = new List<Category>();
+
+                    for (var j = 0; j < 3; j++)
+                    {
+                        Category categoryChild1 = categorySetDefault.Generate();
+                        categoryChild1.Title = $"Category level 2-{i}-{j} {categoryChild1.Title}";
+                        categoryChild1.Slug = Slug.GenerateSlug(categoryChild1.Title);
+                        categoryChild1.ParentCategory = category;
+                        categoryChild1.CategoryChildren = new List<Category>();
+
+                        for (var z = 0; z < 2; z++)
+                        {
+                            Category categoryChild2 = categorySetDefault.Generate();
+                            categoryChild2.Title = $"Category level 3-{i}-{j}-{z} {categoryChild2.Title}";
+                            categoryChild2.Slug = Slug.GenerateSlug(categoryChild2.Title);
+                            categoryChild2.ParentCategory = categoryChild1;
+
+                            categoryChild1.CategoryChildren.Add(categoryChild2);
+                        }
+
+                        category.CategoryChildren.Add(categoryChild1);
+                    }
+
                     _db.Categories.Add(category);
                 };
                 _db.SaveChanges();

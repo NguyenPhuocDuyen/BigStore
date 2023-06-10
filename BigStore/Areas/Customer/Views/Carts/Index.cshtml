@@ -1,0 +1,204 @@
+﻿@model List<IGrouping<Shop, Cart>>
+
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+    //var shopAndProducts = ViewData["ShopAndProducts"] as List<IGrouping<Shop, Cart>>;
+}
+
+<div>
+    <h1 class="bg-white px-3 py-2">@ViewData["Title"]</h1>
+    @*<h6 class="bg-white px-3 py-2 mt-3">Nhấn vào mục Mã giảm giá ở cuối trang để hưởng miễn phí vận chuyển bạn nhé!</h6>*@
+    <div class="bg-white px-3 py-2 mt-3">
+        <div class="row">
+            <div class="col-6 row">
+                <input type="checkbox" id="checkAll" class="col-1 h-75" />
+                <h6 class="col">Sản phẩm</h6>
+            </div>
+            <div class="col-6 row">
+                <h6 class="col">Đơn giá</h6>
+                <h6 class="col">Số lượng</h6>
+                <h6 class="col">Số tiền</h6>
+                <h6 class="col">Thao tác</h6>
+            </div>
+        </div>
+    </div>
+    @foreach (var group in Model)
+    {
+        var shop = group.Key;
+        <div class="bg-white px-3 py-2 mt-3">
+            <div class="row">
+                <div class="col-6 row align-items-center">
+                    <input type="checkbox" class="col-1 h-75 checkbox-item shop" />
+                    <h5 class="col">Shop @shop.ShopName</h5>
+                </div>
+                <div class="col-6"></div>
+            </div>
+            @foreach (var item in group)
+            {
+                <div class="cartItem" data-id="@item.Id">
+                    <hr />
+                    <div class="row">
+                        <div class="col-6 row align-items-center">
+                            <input type="checkbox" class="col-1 h-25 checkbox-item product" />
+                            <div class="col-2">
+                                <img class="card-img-top" src="~/images/noimage.jpg" alt="anh" />
+                            </div>
+                            <h6 class="col">Sản phẩm @item.Product.Name</h6>
+                        </div>
+                        <div class="col-6 row align-items-center">
+                            <p class="col product-price">@item.Product.Price</p>
+                            <div class="col">
+                                <input class="quantity-input" type="number" value="@item.Quantity" min="1" max="@item.Product.Quantity" required />
+                            </div>
+                            <p class="col product-total-price">@(item.Product.Price * item.Quantity) đ</p>
+                            <button class="col btn deleteCart"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    <div class="position-sticky bottom-0 bg-white px-3 py-2 mt-3 shadow">
+        <div class="d-flex justify-content-end align-items-center">
+            <label class="mx-3" for="voucher">Mã giảm giá</label>
+            <input id="voucher" type="text" name="voucher" placeholder="mã giảm giá" />
+        </div>
+        <div class="d-flex justify-content-end ali align-items-center mt-3">
+            <p class="mx-3" id="total-price">Tổng tiền: 0 đ</p>
+            <button id="makeOrder" class="btn-main btn">Mua ngay</button>
+        </div>
+    </div>
+    <form id="orderForm" method="post" asp-action="MakeOrder">
+    </form>
+</div>
+
+<script>
+    $(document).ready(function () {
+        ////tính tiền item được check
+        updateTotalPrice();
+        function updateTotalPrice() {
+            var totalPrice = 0;
+            $('.cartItem').each(function () {
+                var checkbox = $(this).find('.checkbox-item');
+                if (checkbox.is(':checked')) {
+                    var price = parseFloat($(this).find('.product-price').text());
+                    var quantity = parseInt($(this).find('.quantity-input').val());
+                    var itemTotal = price * quantity;
+                    $(this).find('.product-total-price').text(itemTotal.toFixed(0) + ' đ');
+                    totalPrice += itemTotal;
+                }
+            });
+            $('#total-price').text('Tổng tiền: ' + totalPrice.toFixed(0) + ' đ');
+        }
+
+        // Check/Uncheck tất cả checkbox sản phẩm trong shop
+        $('.checkbox-item.shop').change(function () {
+            var isChecked = $(this).prop('checked');
+            $(this)
+                .closest('.bg-white')
+                .find('.checkbox-item.product')
+                .prop('checked', isChecked);
+        });
+
+        // Bỏ check checkbox "Shop" nếu có sản phẩm chưa được check
+        $('.checkbox-item.product').change(function () {
+            var shopContainer = $(this).closest('.bg-white');
+            var shopCheckbox = shopContainer.find('.checkbox-item.shop');
+            var uncheckedProducts = shopContainer.find('.checkbox-item.product:not(:checked)');
+            shopCheckbox.prop('checked', uncheckedProducts.length === 0);
+        });
+
+        $('.checkbox-item').change(function () {
+            var allChecked = true;
+            $('.checkbox-item').each(function () {
+                if (!$(this).is(':checked')) {
+                    allChecked = false;
+                    return false; // Dừng vòng lặp nếu có checkbox chưa được chọn
+                }
+            });
+
+            $('#checkAll').prop('checked', allChecked);
+            updateTotalPrice();
+        });
+
+        //check box
+        $('#checkAll').change(function () {
+            $('.checkbox-item').prop('checked', this.checked);
+            updateTotalPrice();
+        });
+
+        //tạo đơn hàng
+        $('#makeOrder').click(function () {
+            var selectedItems = [];
+
+            $('.checkbox-item:checked').each(function () {
+                var itemId = $(this).closest('.cartItem').data('id');
+                selectedItems.push(itemId);
+            });
+
+            // Tạo một trường ẩn <input> với tên 'selectedItems[]' để truyền danh sách các ID đã chọn
+            var inputField = $('<input>').attr({
+                type: 'hidden',
+                name: 'selectedItems[]'
+            });
+
+            // Gán từng giá trị ID vào trường ẩn <input>
+            selectedItems.forEach(function (itemId) {
+                inputField.clone().val(itemId).appendTo('#orderForm');
+            });
+
+            // Submit form
+            $('#orderForm').submit();
+        });
+
+        // cập nhật số lượng sản phẩm
+        // Xử lý sự kiện khi giá trị của input thay đổi
+        $(document).on('change', '.quantity-input', function () {
+            var inputValue = $(this).val();
+            if (!Number.isInteger(parseInt(inputValue)) || parseInt(inputValue) < 1) {
+                alert('Vui lòng nhập số lượng hợp lệ');
+                $(this).val($(this).attr('value'));
+                return;
+            }
+            var id = $(this).closest('div[class="cartItem"]').data('id');
+            var quantity = parseInt(inputValue);
+
+            // Gọi hàm ajaxRequest với phương thức PUT
+            ajaxRequest(urlCart + '/' + id, 'PUT', JSON.stringify({ Id: id, Quantity: quantity }), function (xhr) {
+                xhr.setRequestHeader('Authorization', token);
+            }, function (response) {
+                toastr.success(messSuccess);
+            }, function (jqXHR, textStatus, errorThrown) {
+                toastr.error(errorThrown);
+            });
+        });
+
+        //action for delete item in cart
+        $('.deleteCart').click(function () {
+            var id = $(this).closest('div[class="cartItem"]').data('id');
+            var cartItem = $(this).closest('div[class="cartItem"]');
+            swal({
+                title: "Xác nhận",
+                text: "Bạn có chắc chắn muốn thực hiện hành động này?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willConfirm) => {
+                    if (willConfirm) {
+                        ajaxRequest(urlCart + '/' + id, 'DELETE', null, function (xhr) {
+                            xhr.setRequestHeader('Authorization', token);
+                        }, function (response) {
+                            toastr.success(messSuccess);
+                            updateTotalPrice();
+                            cartItem.remove();
+                        }, function (jqXHR, textStatus, errorThrown) {
+                            toastr.error(messError);
+                        });
+                    } else {
+                        swal("Hủy bỏ hành động");
+                    }
+                });
+        });
+    });
+</script>

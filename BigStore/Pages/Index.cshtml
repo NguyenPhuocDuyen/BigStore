@@ -36,7 +36,7 @@
             <div class="col-6 col-md-3 col-lg-2 mb-4">
                 <div class="card">
                     <a asp-page="/products/detail" asp-route-slug="@item.Slug" class="text-decoration-none">
-                        <img class="card-img-top" src="@item.ProductImages.FirstOrDefault().ImageUrl" alt="category" />
+                        <img class="card-img-top" src="@item.ProductImages?.FirstOrDefault()?.ImageUrl" alt="category" />
                         <div class="card-body">
                             <p class="card-title">@item.Name</p>
                             <p class="card-subtitle">Giá: @item.Price VND</p>

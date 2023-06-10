@@ -1,15 +1,16 @@
 ﻿using BigStore.DataAccess;
 using BigStore.BusinessObject;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using BigStore.BusinessObject.OtherModels;
 
 namespace BigStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class CartsController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -21,28 +22,22 @@ namespace BigStore.Controllers
             _userManager = userManager;
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok("hi");
-        }
-
         // POST api/<CartsController>
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody] Cart cart)
         {
-            // lấy thông tin người dùng hiện tại
+            //// lấy thông tin người dùng hiện tại
             var user = await _userManager.GetUserAsync(HttpContext.User);
             if (user is null)
-                return NotFound();
-            //string userId = "6b8bbf76-705d-4d1a-99e5-9b18e6067c67";
+                return NotFound(new ApiResponse { Message = "Không tìm thấy người dùng" });
+
             string userId = user.Id;
 
             // lấy thông tin sản phẩm hiên tại
             var product = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == cart.ProductId);
             if (product is null)
-                return NotFound();
+                return NotFound(new ApiResponse { Message = "Không tìm thấy sản phẩm" });
+
             // lấy thông tin cart cũ nếu có tồn tại
             var oldCart = await _dbContext.Carts.FirstOrDefaultAsync(x => x.UserId == userId
                 && x.ProductId == cart.ProductId);
@@ -83,28 +78,70 @@ namespace BigStore.Controllers
             {
                 await _dbContext.SaveChangesAsync();
 
-                if (!quanlityIsValid) return Ok("Vượt quá số lượng, vẫn cộng max");
+                if (!quanlityIsValid)
+                    return Ok(new ApiResponse { Success = true, Message = "Vượt quá số lượng, vẫn cộng max" });
 
                 return NoContent();
             }
-            catch { return BadRequest(); }
+            catch { return BadRequest(new ApiResponse { Message = "Xung đột dữ liệu" }); }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int? id, [FromBody] Cart cart)
+        {
+            if (id is null)
+                return BadRequest(new ApiResponse { Message = "Thiếu id" });
+
+            //// lấy thông tin người dùng hiện tại
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+                return NotFound(new ApiResponse { Message = "Không tìm thấy người dùng" });
+
+            var cartDb = await _dbContext.Carts.Include(x => x.Product).FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
+
+            // biến check số lượng sản phẩm hợp lệ
+            bool quanlityIsValid = true;
+
+            cartDb.Quantity = cart.Quantity;
+
+            if (cartDb.Quantity > cartDb.Product.Quantity)
+            {
+                cartDb.Quantity = cartDb.Product.Quantity;
+                quanlityIsValid = false;
+            }
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+
+                if (!quanlityIsValid)
+                    return Ok(new ApiResponse { Success = true, Message = "Vượt quá số lượng, vẫn cộng max" });
+
+                return NoContent();
+            }
+            catch { return BadRequest(new ApiResponse { Message = "Xung đột dữ liệu" }); }
         }
 
         // DELETE api/<CartsController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            //// lấy thông tin người dùng hiện tại
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+                return NotFound(new ApiResponse { Message = "Không tìm thấy người dùng" });
+
             // tìm và xoá sản phẩm
-            var cart = await _dbContext.Carts.FirstOrDefaultAsync(c => c.Id == id);
-            if (cart is null) return NotFound();
+            var cart = await _dbContext.Carts.FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
+            if (cart is null) return NotFound(new ApiResponse { Message = "Không tìm thấy sản phẩm" });
 
             _dbContext.Carts.Remove(cart);
             try
             {
                 await _dbContext.SaveChangesAsync();
-                return Ok();
+                return NoContent();
             }
-            catch { return BadRequest(); }
+            catch { return BadRequest(new ApiResponse { Message = "Xung đột dữ liệu" }); }
         }
     }
 }

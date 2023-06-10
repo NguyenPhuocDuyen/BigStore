@@ -22,8 +22,8 @@ namespace BigStore.Pages
 
         public void OnGet()
         {
-            Categories = _context.Categories.Include(x => x.CategoryChildren).Where(x => x.ParentCategoryId == null).ToList();
-            Products = _context.Products.Include(x => x.Category).Include(x => x.ProductImages).ToList();
+            Categories = _context.Categories.Where(x => x.ParentCategoryId == null).ToList();
+            Products = _context.Products.Include(x => x.ProductImages).ToList();
         }
     }
 }

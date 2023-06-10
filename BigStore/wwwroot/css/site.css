@@ -46,8 +46,8 @@ img {
 }
 
 .main {
-    margin-top: 58px;
-    background: white;
+    margin-top: 88px;
+/*    background: white;*/
 }
 
 .bg-gray-white {
@@ -55,6 +55,8 @@ img {
 }
 
 .btn-main {
+    outline: none;
+    border: none;   
     color: white;
     background-color: var(--main);
 }
@@ -74,3 +76,9 @@ img {
         background-color: #ffbebe;
         color: var(--main);
     }
+
+a {
+    text-decoration: none;
+    color: black;
+    display: block;
+}

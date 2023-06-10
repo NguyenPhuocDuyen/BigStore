@@ -5,7 +5,7 @@
 <div class="row py-2">
     <div class="col-5">
         <div>
-            <img class="card-img-top" src="@Model.Product?.ProductImages.FirstOrDefault().ImageUrl" alt="anh" />
+            <img class="card-img-top" src="@Model.Product?.ProductImages?.FirstOrDefault()?.ImageUrl" alt="anh" />
             <div class="row mt-3">
                 @foreach (var img in Model.Product.ProductImages)
                 {
@@ -28,7 +28,11 @@
         </div>
         <div class="mt-4">
             <button id="addCart" data-id="@Model.Product.Id" class="btn btn-sub">Thêm vào giỏ hàng</button>
-            <button class="btn btn-main">Mua ngay</button>
+            <button id="buyNow" data-id="@Model.Product.Id" class="btn btn-main">Mua ngay</button>
+            @*<form asp-action="BuyNow" asp-controller="Carts" asp-area="Customer" method="post">
+            <input type="number" value="@Model.Product.Id" hidden name="productId" />
+            <button type="submit" class="btn btn-main">Mua ngay</button>
+            </form>*@
         </div>
     </div>
 </div>
@@ -36,9 +40,16 @@
 <script>
     $(document).ready(function () {
         //add product to cart
-        var button = document.querySelector('#addCart');
+        var isAddingToCart = false;
+        $('#addCart').on('click', function () {
+            // Kiểm tra trạng thái của nút
+            if (isAddingToCart) {
+                return; // Nếu đang thêm sản phẩm vào giỏ hàng, không cho phép click tiếp
+            }
 
-        button.addEventListener('click', function () {
+            // Đánh dấu nút đang thực hiện quá trình thêm vào giỏ hàng
+            isAddingToCart = true;
+
             var productId = this.dataset.id;
             var quantity = $('#quantityBuy').val();
 
@@ -46,6 +57,22 @@
                 xhr.setRequestHeader('Authorization', token);
             }, function (response) {
                 toastr.success(messSuccess);
+                isAddingToCart = false;
+            }, function (jqXHR, textStatus, errorThrown) {
+                toastr.error(messError);
+                isAddingToCart = false;
+            });
+        });
+
+        $('#buyNow').on('click', function () {
+            var productId = this.dataset.id;
+            var quantity = $('#quantityBuy').val();
+
+            ajaxRequest(urlCart, 'POST', JSON.stringify({ ProductId: productId, Quantity: quantity }), function (xhr) {
+                xhr.setRequestHeader('Authorization', token);
+            }, function (response) {
+                toastr.success(messSuccess);
+                window.location.href = '/customer/carts';
             }, function (jqXHR, textStatus, errorThrown) {
                 toastr.error(messError);
             });
