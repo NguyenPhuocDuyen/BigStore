@@ -46,7 +46,7 @@ img {
 }
 
 .main {
-    margin-top: 88px;
+    padding-top: 88px;
 /*    background: white;*/
 }
 
@@ -81,4 +81,10 @@ a {
     text-decoration: none;
     color: black;
     display: block;
+}
+
+.preview {
+    margin: 1rem 0;
+    max-width: 30rem;
+    max-height: 30rem;
 }

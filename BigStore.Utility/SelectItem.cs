@@ -4,6 +4,19 @@ namespace BigStore.Utility
 {
     public static class SelectItem
     {
+        public static List<Category> CreateSelectItemsHasNoParent(List<Category> source, int level = 0)
+        {
+            source.Insert(0, new Category()
+            {
+                Id = -1,
+                Title = "Không có danh mục cha"
+            });
+
+            var items = new List<Category>();
+            CreateSelectItems(source, items, level);
+            return items;
+        }
+
         public static void CreateSelectItems(List<Category> source, List<Category> des, int level)
         {
             string prefix = String.Concat(Enumerable.Repeat("—", level));

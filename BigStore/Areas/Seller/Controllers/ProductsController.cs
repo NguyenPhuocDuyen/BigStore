@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BigStore.DataAccess;
@@ -19,25 +15,32 @@ namespace BigStore.Areas.Seller.Controllers
     [Authorize(Roles = RoleContent.Seller)]
     public class ProductsController : Controller
     {
+        private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
 
-        public ProductsController(ApplicationDbContext context, UserManager<User> userManager)
+        public ProductsController(IConfiguration configuration, ApplicationDbContext context, UserManager<User> userManager)
         {
+            _configuration = configuration;
             _context = context;
             _userManager = userManager;
         }
 
         // GET: Seller/Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageIndex = 1)
         {
             var user = await _userManager.GetUserAsync(User);
 
             var products = _context.Products.Include(p => p.Category)
                 .Include(p => p.Shop)
-                .Where(p => p.Shop.UserId == user.Id);
+                .Where(p => p.Shop.UserId == user.Id)
+                .AsNoTracking()
+                .ToList();
 
-            return View(await products.ToListAsync());
+            var pageSize = _configuration.GetValue("PageSize", 24);
+            PaginatedList<Product> pagingProduts = PaginatedList<Product>.CreateAsync(products, pageIndex, pageSize);
+
+            return View(pagingProduts);
         }
 
         // GET: Seller/Products/Details/5
@@ -63,9 +66,6 @@ namespace BigStore.Areas.Seller.Controllers
         // GET: Seller/Products/Create
         public async Task<IActionResult> CreateAsync()
         {
-            //ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Title");
-            //ViewData["ShopId"] = new SelectList(_context.Shops, "Id", "Address");
-
             var qr = (from c in _context.Categories select c)
                    .Include(x => x.ParentCategory)
                    .Include(x => x.CategoryChildren);
@@ -108,9 +108,9 @@ namespace BigStore.Areas.Seller.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Title", product.CategoryId);
-            
+
             return View(product);
         }
 
@@ -127,14 +127,29 @@ namespace BigStore.Areas.Seller.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Title", product.CategoryId);
-            ViewData["ShopId"] = new SelectList(_context.Shops, "Id", "ShopName", product.ShopId);
+
+            var qr = (from c in _context.Categories select c)
+                   .Include(x => x.ParentCategory)
+                   .Include(x => x.CategoryChildren);
+
+            var categories = (await qr.ToListAsync())
+                            .Where(x => x.ParentCategory == null)
+                            .ToList();
+
+            categories.Insert(0, new Category()
+            {
+                Id = -1,
+                Title = "Không có danh mục cha"
+            });
+
+            var items = new List<Category>();
+            SelectItem.CreateSelectItems(categories, items, 0);
+
+            ViewData["CategoryId"] = new SelectList(items, "Id", "Title", product.CategoryId);
             return View(product);
         }
 
         // POST: Seller/Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryId,ShopId,Name,Description,Price,Quantity,Slug,CreateAt,UpdateAt,IsDelete")] Product product)

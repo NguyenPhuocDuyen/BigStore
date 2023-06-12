@@ -1,5 +1,5 @@
-﻿@model IEnumerable<BigStore.BusinessObject.Product>
-
+﻿@model PaginatedList<Product>
+@using Microsoft.AspNetCore.Http
 @{
     ViewData["Title"] = "Danh sách sản phẩm trong shop";
 }
@@ -7,55 +7,72 @@
 <h1>@ViewData["Title"]</h1>
 
 <p>
-    <a asp-action="Create">Thêm sản phẩm mới</a>
+    <a class="btn btn-primary" asp-action="Create">Thêm sản phẩm mới</a>
 </p>
 
 <table class="table">
     <thead>
         <tr>
+            <th>Id</th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                Tên sản phẩm
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                Giá
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                Số lượng
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Slug)
-            </th>
+            <th>Đã bị xoá</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                <a asp-action="Details" asp-route-slug="@item.Slug">
-                    @Html.DisplayFor(modelItem => item.Name)
-                </a>
-            </td>
-            <td>
-                @Html.Raw(item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quantity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Slug)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-slug="@item.Slug">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    <input type="checkbox" value="@item.IsDelete" disabled/>
+                </td>
+                <td>
+                    @if (!(bool)item.IsDelete)
+                    {
+                        <a class="btn btn-success" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+@{
+    Func<int?, string> generateUrl = (int? _pagenumber) =>
+    {
+        var currentUrl = Context.Request.Path;
+        return Url.Page(currentUrl, new { pageIndex = _pagenumber });
+    };
+
+    var datapaging = new
+    {
+        currentPage = Model.PageIndex,
+        countPages = Model.TotalPages,
+        generateUrl = generateUrl
+    };
+
+}
+<partial name="_Paging" model="@datapaging" />

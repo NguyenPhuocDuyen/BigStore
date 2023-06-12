@@ -28,8 +28,8 @@ namespace BigStore.BusinessObject
         [Column(TypeName = "nvarchar(max)")]
         public string Address { get; set; } = string.Empty;
 
-        public DateTime? CreateAt { get; set; } = DateTime.Now;
-        public DateTime? UpdateAt { get; set; } = DateTime.Now;
+        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
 
         public virtual OrderStatus? OrderStatus { get; set; }
         public virtual User? User { get; set; }

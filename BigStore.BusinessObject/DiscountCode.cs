@@ -29,13 +29,13 @@ namespace BigStore.BusinessObject
         public int RemainingUsageCount { get; set; }
 
         [Required]
-        public DateTime StartDate { get; set; } = DateTime.Now;
+        public DateTime StartDate { get; set; } = DateTime.UtcNow;
 
         [Required]
-        public DateTime EndDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.UtcNow;
 
-        public DateTime? CreateAt { get; set; } = DateTime.Now;
-        public DateTime? UpdateAt { get; set; } = DateTime.Now;
+        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
 
         public bool? IsDelete { get; set; }
 

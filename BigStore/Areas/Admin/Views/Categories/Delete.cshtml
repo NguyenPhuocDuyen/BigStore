@@ -19,49 +19,25 @@
             @Html.DisplayNameFor(model => model.Description)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Slug)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Slug)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreateAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreateAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UpdateAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UpdateAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDelete)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDelete)
+            @Html.Raw(Model.Description)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ParentCategory)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ParentCategory.Description)
+            @Html.DisplayFor(model => model.ParentCategory.Title)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ImageUrl)
+        </dt>
+        <dd class = "col-sm-10 preview">
+            <img src="@Model.ImageUrl" alt="anh" />
         </dd>
     </dl>
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Xoá" class="btn btn-danger" /> |
-        <a asp-action="Index">Danh sách danh mục</a>
+        <input type="submit" value="Xoá" class="btn btn-danger" />
+        <a class="btn btn-primary" asp-action="Index">Danh sách danh mục</a>
     </form>
 </div>

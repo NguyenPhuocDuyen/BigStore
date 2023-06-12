@@ -9,12 +9,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using BigStore.DataAccess.Repository.IRepository;
+using BigStore.DataAccess.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // database initial
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 // Register mail config
 builder.Services.AddOptions();                                        // Kích hoạt Options
 var mailsettings = builder.Configuration.GetSection("MailSettings");  // đọc config

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BigStore.DataAccess;
 using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Authorization;
 using BigStore.BusinessObject.OtherModels;
 using BigStore.Utility;
+using BigStore.DataAccess.Repository.IRepository;
+using BigStore.DataAccess;
 
 namespace BigStore.Areas.Admin.Controllers
 {
@@ -18,155 +15,97 @@ namespace BigStore.Areas.Admin.Controllers
     [Authorize(Roles = RoleContent.Admin)]
     public class CategoriesController : Controller
     {
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ICategoryRepository categoryRepository, IConfiguration configuration, ApplicationDbContext context)
         {
+            _categoryRepository = categoryRepository;
+            _configuration = configuration;
             _context = context;
         }
 
         // GET: Admin/Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageIndex)
         {
-            var qr = (from c in _context.Categories select c)
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren);
+            var categories = await _categoryRepository.GetCategories();
 
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            return View(categories);
+            var pageSize = _configuration.GetValue("PageSize", 24);
+            var pagingCategories = PaginatedList<Category>.CreateAsync(categories, pageIndex, pageSize);
+            return View(pagingCategories);
         }
 
         // GET: Admin/Categories/Details/5
         public async Task<IActionResult> Details(string slug)
         {
-            if (_context.Categories == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.Slug == slug);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
+            var category = await _categoryRepository.GetCategoryBySlug(slug);
+            if (category == null) return NotFound();
             return View(category);
         }
 
         // GET: Admin/Categories/Create
         public async Task<IActionResult> CreateAsync()
         {
-            var qr = (from c in _context.Categories select c)
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title");
+            ViewData["ParentCategoryId"] = await RenderSelectListCategories(null);
             return View();
         }
 
         // POST: Admin/Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile? ThumbnailFile)
+        public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description")] Category category, IFormFile? ThumbnailFile)
         {
+            //Generate slug
+            category.Slug ??= Slug.GenerateSlug(category.Title);
+            var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
+            if (cateSlug != null)
+                ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
+
             if (ModelState.IsValid)
             {
                 category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories");
-                //Generate slug if null
-                category.Slug ??= Slug.GenerateSlug(category.Title);
-
                 if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
-                category.CreateAt = DateTime.Now;
-                category.UpdateAt = DateTime.Now;
+                category.CreateAt = DateTime.UtcNow;
+                category.UpdateAt = DateTime.UtcNow;
                 category.IsDelete = false;
-                _context.Add(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _categoryRepository.Add(category);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+                    ModelState.AddModelError(string.Empty, "Có lỗi xảy ra!");
+                }
+
             }
 
-            var qr = (from c in _context.Categories select c)
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
+            ViewData["ParentCategoryId"] = await RenderSelectListCategories(category.ParentCategoryId);
             return View(category);
         }
 
         // GET: Admin/Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Categories == null)
-            {
+            if (id == null)
                 return NotFound();
-            }
 
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryRepository.GetCategoryById((int)id);
             if (category == null)
-            {
                 return NotFound();
-            }
 
-            var qr = (from c in _context.Categories select c)
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
+            ViewData["ParentCategoryId"] = await RenderSelectListCategories(category.ParentCategoryId);
             return View(category);
         }
 
         // POST: Admin/Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description,Slug")] Category category, IFormFile? ThumbnailFile)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description")] Category category, IFormFile? ThumbnailFile)
         {
             if (id != category.Id)
-            {
                 return NotFound();
-            }
 
             bool canUpdate = true;
 
@@ -178,10 +117,7 @@ namespace BigStore.Areas.Admin.Controllers
 
             if (canUpdate && category.ParentCategoryId != null && category.ParentCategoryId != -1)
             {
-                var childCates = _context.Categories.AsNoTracking()
-                                .Include(c => c.CategoryChildren)
-                                .ToList()
-                                .Where(c => c.ParentCategoryId == category.Id);
+                var childCates = await _categoryRepository.GetChildCategories(category.Id);
 
                 Func<List<Category>, bool> checkCateIds = null;
                 checkCateIds = (cates) =>
@@ -204,28 +140,35 @@ namespace BigStore.Areas.Admin.Controllers
                 checkCateIds(childCates.ToList());
             }
 
+            //Generate slug
+            category.Slug ??= Slug.GenerateSlug(category.Title);
+            var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
+            if (cateSlug != null && cateSlug.Id != category.Id)
+                ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
+
             if (ModelState.IsValid && canUpdate)
             {
                 try
                 {
                     //save images
                     // Giữ nguyên giá trị cũ của ImageUrl nếu không có file được tải lên
-                    var existingCategory = _context.Categories.AsNoTracking()
-                        .FirstOrDefault(c => c.Id == category.Id);
+                    var existingCategory = await _categoryRepository.GetCategoryById(category.Id);
                     category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories", existingCategory.ImageUrl);
 
-                    //Generate slug if null
+                    //Generate slug
                     category.Slug ??= Slug.GenerateSlug(category.Title);
 
                     if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
-                    category.UpdateAt = DateTime.Now;
-                    _context.Entry(category).State = EntityState.Modified;
-                    //_context.Update(category);
-                    await _context.SaveChangesAsync();
+                    category.UpdateAt = DateTime.UtcNow;
+
+                    await _categoryRepository.Update(category);
+                    //_context.Entry(category).State = EntityState.Modified;
+                    ////_context.Update(category);
+                    //await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!await CategoryExists(category.Id))
                     {
                         return NotFound();
                     }
@@ -237,42 +180,16 @@ namespace BigStore.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var qr = (from c in _context.Categories select c)
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["ParentCategoryId"] = new SelectList(items, "Id", "Title", category.ParentCategoryId);
+            ViewData["ParentCategoryId"] = await RenderSelectListCategories(category.ParentCategoryId);
             return View(category);
         }
 
         // GET: Admin/Categories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Categories == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var category = await _categoryRepository.GetCategoryById((int)id);
+            if (category == null) return NotFound();
 
             return View(category);
         }
@@ -282,32 +199,26 @@ namespace BigStore.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Categories == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
-            }
+            var category = await _categoryRepository.GetCategoryById(id);
 
-            var category = await _context.Categories
-                        .Include(x => x.CategoryChildren)
-                        .FirstOrDefaultAsync(x => x.Id == id);
+            if (category == null)
+                return NotFound();
 
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-            }
-
-            foreach (var childCategory in category.CategoryChildren)
-            {
-                childCategory.ParentCategoryId = category.ParentCategoryId;
-            }
-
-            await _context.SaveChangesAsync();
+            await _categoryRepository.Remove(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CategoryExists(int id)
+        private async Task<bool> CategoryExists(int id)
         {
-            return (_context.Categories?.Any(e => e.Id == id)).GetValueOrDefault();
+            var category = await _categoryRepository.GetCategoryById(id);
+            return category is not null;
+        }
+
+        private async Task<SelectList?> RenderSelectListCategories(int? idSelect)
+        {
+            var categories = await _categoryRepository.GetCategories();
+            var items = SelectItem.CreateSelectItemsHasNoParent(categories);
+            return new SelectList(items, "Id", "Title", idSelect);
         }
     }
 }

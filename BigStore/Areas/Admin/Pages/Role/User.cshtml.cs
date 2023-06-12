@@ -55,7 +55,6 @@ namespace BigStore.Areas.Admin.Pages.Role
 
             int totalUsers = await lusers.CountAsync();
 
-
             totalPages = (int)Math.Ceiling((double)totalUsers / USER_PER_PAGE);
 
             users = await lusers.Skip(USER_PER_PAGE * (pageNumber - 1)).Take(USER_PER_PAGE).ToListAsync();

@@ -15,8 +15,8 @@ namespace BigStore.BusinessObject
 
         public bool? IsRead { get; set; }
 
-        public DateTime? CreateAt { get; set; } = DateTime.Now;
-        public DateTime? UpadteAt { get; set; } = DateTime.Now;
+        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpadteAt { get; set; } = DateTime.UtcNow;
 
         public virtual User? User { get; set; }
     }

@@ -19,8 +19,8 @@ namespace BigStore.BusinessObject
         [Required, Column(TypeName = "nvarchar(max)")]
         public string Description { get; set; } = string.Empty;
 
-        public DateTime? CreateAt { get; set; } = DateTime.Now;
-        public DateTime? UpdateAt { get; set; } = DateTime.Now;
+        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
 
         public bool? IsDelete { get; set; }
 

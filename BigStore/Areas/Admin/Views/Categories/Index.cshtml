@@ -1,5 +1,4 @@
-﻿@model IEnumerable<BigStore.BusinessObject.Category>
-
+﻿@model PaginatedList<Category>
 @{
     ViewData["Title"] = "Danh mục sản phẩm";
 }
@@ -13,16 +12,17 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                Tên danh mục
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slug)
+                Slug
             </th>
-            <th></th>
+            <th>Thao tác</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model) {
+        @foreach (var item in Model)
+        {
             int level = 0;
             await RenderCategory(item, level);
         }
@@ -31,23 +31,23 @@
 
 @{
     async Task RenderCategory(Category item, int level)
-    { 
+    {
         string prefix = String.Concat(Enumerable.Repeat("&nbsp;&nbsp;&nbsp;&nbsp;", level));
 
         <tr>
             <td>
-                @Html.Raw(prefix) 
                 <a asp-action="Details" asp-route-slug="@item.Slug">
+                    @Html.Raw(prefix)
                     @Html.DisplayFor(modelItem => item.Title)
                 </a>
-            </td> 
- 
+            </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.Slug)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Chỉnh sửa</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                <a class="btn btn-success" asp-action="Edit" asp-route-id="@item.Id">Chỉnh sửa</a>
+                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
             </td>
         </tr>
         if (item.CategoryChildren?.Count > 0)
@@ -57,5 +57,21 @@
                 await RenderCategory(cCategory, level + 1);
             }
         }
-    }  
+    }
 }
+
+@{
+    Func<int?, string> generateUrl = (int? _pagenumber) =>
+    {
+        var currentUrl = Context.Request.Path;
+        return Url.Page(currentUrl, new { pageIndex = _pagenumber });
+    };
+
+    var datapaging = new
+    {
+        currentPage = Model.PageIndex,
+        countPages = Model.TotalPages,
+        generateUrl = generateUrl
+    };
+}
+<partial name="_Paging" model="@datapaging" />

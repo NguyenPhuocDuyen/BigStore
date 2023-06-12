@@ -1,15 +1,14 @@
 ﻿@model BigStore.BusinessObject.Product
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Tạo sản phẩm mới";
 }
 
-<h1>Create</h1>
+<h1>@ViewData["Title"]</h1>
 
-<h4>Product</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-8">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -37,12 +36,14 @@
                 <span asp-validation-for="Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Slug" class="control-label"></label>
-                <input asp-for="Slug" class="form-control" />
-                <span asp-validation-for="Slug" class="text-danger"></span>
+                <label for="ThumbnailFiles" class="control-label"></label>
+                <input id="ThumbnailFiles" type="file" name="ThumbnailFiles" class="form-control" accept="image/*" multiple />
+                <div class="preview">
+                    <div id="thumbnail-preview"></div>
+                </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Tạo sản phẩm" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -51,6 +52,34 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
+@{
+    var summernote = new Summernote("#Description");
+}
+<partial name="_Summernote" model="summernote" />
+
+<script>
+    $(document).ready(function () {
+        $("#ThumbnailFiles").on("change", function () {
+            var files = this.files;
+            var previewContainer = $("#thumbnail-preview");
+
+            previewContainer.empty();
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var img = $("<img>").attr("src", e.target.result);
+                    previewContainer.append(img);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

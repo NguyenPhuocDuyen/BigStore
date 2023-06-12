@@ -11,10 +11,12 @@ namespace BigStore.Pages.Products
     public class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IConfiguration _configuration;
 
-        public IndexModel(ApplicationDbContext dbContext)
+        public IndexModel(ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         public PaginatedList<Product> ProductsPaging { get; set; }
@@ -117,7 +119,8 @@ namespace BigStore.Pages.Products
                 case "sales": break;
                 default: break;
             }
-            var pageSize = 24;
+            //var pageSize = 24;
+            var pageSize = _configuration.GetValue("PageSize", 24);
             ProductsPaging = PaginatedList<Product>.CreateAsync(query.AsNoTracking().ToList(), pageIndex, pageSize);
 
             CategorySlug = categorySlug;
