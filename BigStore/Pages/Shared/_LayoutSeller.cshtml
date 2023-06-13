@@ -51,9 +51,6 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-page="/Index">Trang chủ</a>
-                        </li>
                         @if (User.Identity.IsAuthenticated && User.IsInRole(RoleContent.Customer) && (!User.IsInRole(RoleContent.Seller)))
                         {
                             <li class="nav-item">
@@ -106,6 +103,10 @@
         </div>
     </div>
 
+    @*@{
+        var summernote = new Summernote("#Description");
+        <partial name="_Summernote" model="summernote" />
+    }*@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

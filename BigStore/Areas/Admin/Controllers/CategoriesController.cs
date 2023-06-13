@@ -57,7 +57,7 @@ namespace BigStore.Areas.Admin.Controllers
         public async Task<IActionResult> Create([Bind("Id,ParentCategoryId,Title,Description")] Category category, IFormFile? ThumbnailFile)
         {
             //Generate slug
-            category.Slug ??= Slug.GenerateSlug(category.Title);
+            category.Slug = Slug.GenerateSlug(category.Title);
             var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
             if (cateSlug != null)
                 ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
@@ -107,6 +107,10 @@ namespace BigStore.Areas.Admin.Controllers
             if (id != category.Id)
                 return NotFound();
 
+            var existingCategory = await _categoryRepository.GetCategoryById(category.Id);
+            if (existingCategory == null)
+                return NotFound();
+
             bool canUpdate = true;
 
             if (category.ParentCategoryId == category.Id)
@@ -141,7 +145,7 @@ namespace BigStore.Areas.Admin.Controllers
             }
 
             //Generate slug
-            category.Slug ??= Slug.GenerateSlug(category.Title);
+            category.Slug = Slug.GenerateSlug(category.Title);
             var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
             if (cateSlug != null && cateSlug.Id != category.Id)
                 ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
@@ -150,18 +154,21 @@ namespace BigStore.Areas.Admin.Controllers
             {
                 try
                 {
+                    existingCategory.ParentCategoryId = category.ParentCategoryId;
+                    if (existingCategory.ParentCategoryId == -1) existingCategory.ParentCategoryId = null;
+
                     //save images
                     // Giữ nguyên giá trị cũ của ImageUrl nếu không có file được tải lên
-                    var existingCategory = await _categoryRepository.GetCategoryById(category.Id);
-                    category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories", existingCategory.ImageUrl);
+                    existingCategory.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories", existingCategory.ImageUrl);
+                    existingCategory.Title = category.Title;
+                    existingCategory.Description = category.Description;
+                    existingCategory.Slug = category.Slug;
+                    ////Generate slug
+                    //category.Slug = Slug.GenerateSlug(category.Title);
 
-                    //Generate slug
-                    category.Slug ??= Slug.GenerateSlug(category.Title);
+                    existingCategory.UpdateAt = DateTime.UtcNow;
 
-                    if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
-                    category.UpdateAt = DateTime.UtcNow;
-
-                    await _categoryRepository.Update(category);
+                    await _categoryRepository.Update(existingCategory);
                     //_context.Entry(category).State = EntityState.Modified;
                     ////_context.Update(category);
                     //await _context.SaveChangesAsync();

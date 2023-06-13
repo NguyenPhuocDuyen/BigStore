@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // database initial
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 // Register mail config
 builder.Services.AddOptions();                                        // Kích hoạt Options
 var mailsettings = builder.Configuration.GetSection("MailSettings");  // đọc config

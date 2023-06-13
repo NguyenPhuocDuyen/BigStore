@@ -45,6 +45,7 @@
     <Folder Include="Areas\Seller\Data\" />
     <Folder Include="Areas\Seller\Models\" />
     <Folder Include="assets\scss\" />
+    <Folder Include="wwwroot\images\products\" />
   </ItemGroup>
 
   <ItemGroup>

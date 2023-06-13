@@ -8,6 +8,7 @@ using BigStore.BusinessObject.OtherModels;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using BigStore.Utility;
+using BigStore.DataAccess.Repository.IRepository;
 
 namespace BigStore.Areas.Seller.Controllers
 {
@@ -16,100 +17,87 @@ namespace BigStore.Areas.Seller.Controllers
     public class ProductsController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
 
-        public ProductsController(IConfiguration configuration, ApplicationDbContext context, UserManager<User> userManager)
+        public ProductsController(IConfiguration configuration,
+            UserManager<User> userManager,
+            ICategoryRepository categoryRepository,
+            IProductRepository productRepository)
         {
             _configuration = configuration;
-            _context = context;
             _userManager = userManager;
+            _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         // GET: Seller/Products
         public async Task<IActionResult> Index(int pageIndex = 1)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            var products = _context.Products.Include(p => p.Category)
-                .Include(p => p.Shop)
-                .Where(p => p.Shop.UserId == user.Id)
-                .AsNoTracking()
-                .ToList();
-
+            var products = await _productRepository.GetProductsOfShopByUserId(user.Id);
             var pageSize = _configuration.GetValue("PageSize", 24);
             PaginatedList<Product> pagingProduts = PaginatedList<Product>.CreateAsync(products, pageIndex, pageSize);
-
             return View(pagingProduts);
         }
 
         // GET: Seller/Products/Details/5
         public async Task<IActionResult> Details(string? slug)
         {
-            if (slug == null || _context.Products == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Shop)
-                .FirstOrDefaultAsync(m => m.Slug == slug);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
+            if (slug == null) return NotFound();
+            var product = await _productRepository.GetProductBySlug(slug);
+            if (product == null) return NotFound();
             return View(product);
         }
 
         // GET: Seller/Products/Create
         public async Task<IActionResult> CreateAsync()
         {
-            var qr = (from c in _context.Categories select c)
-                   .Include(x => x.ParentCategory)
-                   .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["CategoryId"] = new SelectList(items, "Id", "Title");
-
+            ViewData["CategoryId"] = await RenderSelectListCategories(null);
             return View();
         }
 
         // POST: Seller/Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CategoryId,Name,Description,Price,Quantity,Slug")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,CategoryId,Name,Description,Price,Quantity")] Product product, IFormFileCollection ThumbnailFiles)
         {
+            //Generate slug
+            product.Slug = Slug.GenerateSlug(product.Name);
+            var productSlug = await _productRepository.GetProductBySlug(product.Slug);
+            if (productSlug != null)
+                ModelState.AddModelError(string.Empty, "Sản phẩm bị trùng slug. Hãy đặt tên khác");
+
+            if (ThumbnailFiles.Count == 0)
+                ModelState.AddModelError(string.Empty, "Hãy thêm ảnh.");
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
                 product.ShopId = (int)user.ShopId;
-
                 if (product.CategoryId == -1) product.CategoryId = null;
-
-                product.CreateAt = DateTime.Now;
-                product.UpdateAt = DateTime.Now;
+                product.CreateAt = DateTime.UtcNow;
+                product.UpdateAt = DateTime.UtcNow;
                 product.IsDelete = false;
+                product.ProductImages = new List<ProductImage>();
 
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                // thêm ảnh cho sản phẩm
+                foreach (var file in ThumbnailFiles)
+                {
+                    ProductImage productImage = new()
+                    {
+                        Product = product,
+                        ImageUrl = await Image.GetPathImageSaveAsync(file, "products")
+                    };
+                    product.ProductImages.Add(productImage);
+                }
+
+                await _productRepository.Add(product);
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Title", product.CategoryId);
+            ViewData["CategoryId"] = await RenderSelectListCategories(product.CategoryId);
 
             return View(product);
         }
@@ -117,90 +105,84 @@ namespace BigStore.Areas.Seller.Controllers
         // GET: Seller/Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Products == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
+            var product = await _productRepository.GetProductById((int)id);
+            if (product == null) return NotFound();
 
-            var qr = (from c in _context.Categories select c)
-                   .Include(x => x.ParentCategory)
-                   .Include(x => x.CategoryChildren);
-
-            var categories = (await qr.ToListAsync())
-                            .Where(x => x.ParentCategory == null)
-                            .ToList();
-
-            categories.Insert(0, new Category()
-            {
-                Id = -1,
-                Title = "Không có danh mục cha"
-            });
-
-            var items = new List<Category>();
-            SelectItem.CreateSelectItems(categories, items, 0);
-
-            ViewData["CategoryId"] = new SelectList(items, "Id", "Title", product.CategoryId);
+            ViewData["CategoryId"] = await RenderSelectListCategories(product.CategoryId);
             return View(product);
         }
 
         // POST: Seller/Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryId,ShopId,Name,Description,Price,Quantity,Slug,CreateAt,UpdateAt,IsDelete")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryId,ShopId,Name,Description,Price,Quantity")] Product product, IFormFileCollection ThumbnailFiles)
         {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
+            if (id != product.Id) return NotFound();
+
+            var productDb = await _productRepository.GetProductById(id);
+            if (productDb == null) return NotFound();
+
+            //Generate slug
+            product.Slug = Slug.GenerateSlug(product.Name);
+            var productSlug = await _productRepository.GetProductBySlug(product.Slug);
+            if (productSlug != null && productSlug.Id != id)
+                ModelState.AddModelError(string.Empty, "Sản phẩm bị trùng slug. Hãy đặt tên khác");
 
             if (ModelState.IsValid)
             {
+                productDb.CategoryId = product.CategoryId;
+                if (productDb.CategoryId == -1) productDb.CategoryId = null;
+                productDb.Name = product.Name;
+                productDb.Description = product.Description;
+                productDb.Price = product.Price;
+                productDb.Quantity = product.Quantity;
+                productDb.Slug = product.Slug;
+                productDb.UpdateAt = DateTime.UtcNow;
+                
+                if (ThumbnailFiles.Count > 0)
+                {
+                    await _productRepository.RemoveImagesOfProduct(productDb.Id);
+                    productDb.ProductImages = new List<ProductImage>();
+                    foreach (var item in ThumbnailFiles)
+                    {
+                        ProductImage productImage = new()
+                        {
+                            Product = productDb,
+                            ImageUrl = await Image.GetPathImageSaveAsync(item, "products")
+                        };
+                        productDb.ProductImages.Add(productImage);
+                    }
+                }
+
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _productRepository.Update(productDb);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!await ProductExists(product.Id))
                     {
                         return NotFound();
                     }
                     else
                     {
-                        throw;
+                        throw new Exception(ex.Message); 
                     }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Title", product.CategoryId);
-            ViewData["ShopId"] = new SelectList(_context.Shops, "Id", "ShopName", product.ShopId);
+            ViewData["CategoryId"] = await RenderSelectListCategories(product.CategoryId);
             return View(product);
         }
 
         // GET: Seller/Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Products == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Shop)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var product = await _productRepository.GetProductById((int)id);
+            if (product == null) return NotFound();
             return View(product);
         }
 
@@ -209,23 +191,23 @@ namespace BigStore.Areas.Seller.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Products == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Products'  is null.");
-            }
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
+            var product = await _productRepository.GetProductById(id);
+            if (product == null) return NotFound();
 
-            await _context.SaveChangesAsync();
+            await _productRepository.Remove(product.Id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private async Task<bool> ProductExists(int id)
         {
-            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
+            return await _productRepository.GetProductById((int)id) is not null;
+        }
+
+        private async Task<SelectList?> RenderSelectListCategories(int? idSelect)
+        {
+            var categories = await _categoryRepository.GetCategories();
+            var items = SelectItem.CreateSelectItemsHasNoParent(categories);
+            return new SelectList(items, "Id", "Title", idSelect);
         }
     }
 }

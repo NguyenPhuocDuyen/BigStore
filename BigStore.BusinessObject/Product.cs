@@ -11,8 +11,8 @@ namespace BigStore.BusinessObject
         [Display(Name = "Danh mục sản phẩm")]
         public int? CategoryId { get; set; }
 
-        [Required]
-        public int ShopId { get; set; }
+        //[Required]
+        public int? ShopId { get; set; }
 
         [Required, MaxLength(255)]
         [Display(Name = "Tên sản phẩm")]
@@ -33,11 +33,11 @@ namespace BigStore.BusinessObject
         public int Quantity { get; set; } = 0;
 
         //chuỗi Url
-        [Required(ErrorMessage = "Phải tạo url")]
+        //[Required(ErrorMessage = "Phải tạo url")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "{0} dài {1} đến {2}")]
         [RegularExpression(@"^[a-z0-9-]*$", ErrorMessage = "Chỉ dùng các ký tự [a-z0-9-]")]
         [Display(Name = "Url hiện thị")]
-        public string Slug { set; get; } = string.Empty;
+        public string? Slug { set; get; }
 
         public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;

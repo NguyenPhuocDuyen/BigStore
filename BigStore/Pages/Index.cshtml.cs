@@ -3,27 +3,29 @@ using BigStore.BusinessObject;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using BigStore.DataAccess.Repository.IRepository;
 
 namespace BigStore.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
 
-        public IndexModel(ILogger<IndexModel> logger, ApplicationDbContext context)
+        public IndexModel(ICategoryRepository categoryRepository, IProductRepository productRepository)
         {
-            _logger = logger;
-            _context = context;
+            _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         public List<Category> Categories { get; set; }
         public List<Product> Products { get; set; }
 
-        public void OnGet()
+        public async Task OnGet()
         {
-            Categories = _context.Categories.Where(x => x.ParentCategoryId == null).ToList();
-            Products = _context.Products.Include(x => x.ProductImages).ToList();
+            Categories = await _categoryRepository.GetCategories();
+            Products = (await _productRepository.GetProducts())
+                .OrderByDescending(x => x.UpdateAt).ToList();
         }
     }
 }

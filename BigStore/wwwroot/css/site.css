@@ -88,3 +88,10 @@ a {
     max-width: 30rem;
     max-height: 30rem;
 }
+
+.preview-image {
+    max-width: 100px; /* Customize the image width as needed */
+    height: auto; /* Maintain the image aspect ratio */
+    display: inline-block;
+    margin-right: 10px; /* Add some spacing between images */
+}
