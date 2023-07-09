@@ -80,7 +80,7 @@ namespace BigStore.DataAccess.DbInitializer
                             ProductImage productImage = new()
                             {
                                 Product = p,
-                                ImageUrl = "/images/noimage.jpg"
+                                ImageUrl = "/images/products/apple.jpg"
                             };
                             //_db.ProductImages.Add(productImage);
                             p.ProductImages.Add(productImage);
@@ -100,7 +100,7 @@ namespace BigStore.DataAccess.DbInitializer
                 var categorySetDefault = new Faker<Category>();
                 categorySetDefault.RuleFor(x => x.Title, f => f.Lorem.Word());
                 categorySetDefault.RuleFor(x => x.Description, f => $"<p>Điện thoại: {f.Lorem.Paragraph()}</p>");
-                categorySetDefault.RuleFor(x => x.ImageUrl, "/images/noimage.jpg");
+                categorySetDefault.RuleFor(x => x.ImageUrl, "/images/categories/fruit.jpg");
 
                 for (int i = 0; i < 4; i++)
                 {

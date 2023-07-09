@@ -11,10 +11,14 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using BigStore.DataAccess.Repository.IRepository;
 using BigStore.DataAccess.Repository;
+using BigStore.Config.Automapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// config automapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
 // database initial
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

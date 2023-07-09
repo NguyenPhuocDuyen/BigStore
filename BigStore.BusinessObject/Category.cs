@@ -14,8 +14,7 @@ namespace BigStore.BusinessObject
         [StringLength(255, MinimumLength = 3, ErrorMessage = "{0} dài {1} đến {2}")]
         [Display(Name = "Tên danh mục")]
         public string Title { get; set; } = null!;
-
-        [Required, Column(TypeName = "nvarchar(max)")]
+        
         [Display(Name = "Mô tả danh mục")]
         public string Description { get; set; } = null!;
 
@@ -26,7 +25,6 @@ namespace BigStore.BusinessObject
         [Display(Name = "Url hiện thị")]
         public string Slug { set; get; } = null!;
 
-        [MaxLength(255)]
         [Display(Name = "Hình ảnh")]
         public string ImageUrl { get; set; } = null!;
 

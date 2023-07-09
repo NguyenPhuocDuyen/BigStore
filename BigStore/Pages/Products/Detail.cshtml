@@ -27,12 +27,15 @@
             <p class="col">@Model.Product.Quantity sẵn phẩm có sẵn</p>
         </div>
         <div class="mt-4">
-            <button id="addCart" data-id="@Model.Product.Id" class="btn btn-sub">Thêm vào giỏ hàng</button>
-            <button id="buyNow" data-id="@Model.Product.Id" class="btn btn-main">Mua ngay</button>
-            @*<form asp-action="BuyNow" asp-controller="Carts" asp-area="Customer" method="post">
-            <input type="number" value="@Model.Product.Id" hidden name="productId" />
-            <button type="submit" class="btn btn-main">Mua ngay</button>
-            </form>*@
+            @if (User.Identity.IsAuthenticated)
+            {
+                <button id="addCart" data-id="@Model.Product.Id" class="btn btn-sub">Thêm vào giỏ hàng</button>
+                <button id="buyNow" data-id="@Model.Product.Id" class="btn btn-main">Mua ngay</button>
+            }
+            else
+            {
+                <a class="btn btn-main" asp-area="Identity" asp-page="/Account/Login">Đăng nhập để mua</a>
+            }
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-﻿@model BigStore.BusinessObject.Category
+﻿@model CategoryUpdateDto
 
 @{
     ViewData["Title"] = "Chỉnh sửa danh mục";
@@ -11,6 +11,7 @@
         <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ImageUrl" />
             <div class="form-group">
                 <label asp-for="ParentCategoryId" class="control-label"></label>
                 <select asp-for="ParentCategoryId" class="form-control" asp-items="ViewBag.ParentCategoryId"></select>
