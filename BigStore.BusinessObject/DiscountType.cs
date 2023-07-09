@@ -3,14 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BigStore.BusinessObject
 {
-    public class DiscountType
+    public class DiscountType : BaseEntity
     {
-        [Key] 
-        public int Id { get; set; }
+        public string Name { get; set; } = null!;
 
-        [Required, MaxLength(255)]
-        public string Name { get; set; } = string.Empty;
-
-        public virtual ICollection<DiscountCode>? DiscountCodes { get; set; }
+        public virtual ICollection<DiscountCode> DiscountCodes { get; set; } = new List<DiscountCode>();
     }
 }

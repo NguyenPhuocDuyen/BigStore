@@ -3,37 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BigStore.BusinessObject
 {
-    public class Shop
+    public class Shop : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
+        //[ScaffoldColumn(false)]
+        public string UserId { get; set; } = null!;
 
-        //[Required]
-        [ScaffoldColumn(false)]
-        public string? UserId { get; set; } = string.Empty;
+        public string ShopName { get; set; } = null!;
 
-        [Required, MaxLength(255)]
-        public string ShopName { get; set; } = string.Empty;
+        public string Description { get; set; } = null!;
 
-        [Required, Column(TypeName = "nvarchar(max)")]
-        public string Description { get; set; } = string.Empty;
+        [Phone]
+        public string Phone { get; set; } = null!;
 
-        [Required]
-        [Phone, MaxLength(20)]
-        public string Phone { get; set; } = string.Empty;
-
-        [Required]
         [Column(TypeName = "nvarchar(max)")]
-        public string Address { get; set; } = string.Empty;
+        public string Address { get; set; } = null!;
 
-        [MaxLength(255)]
-        public string? ImageUrl { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = null!;
 
-        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
-        
-        public virtual User? User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public virtual User User { get; set; } = null!;
 
-        public virtual ICollection<Product>? Products { get; set; }
+        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

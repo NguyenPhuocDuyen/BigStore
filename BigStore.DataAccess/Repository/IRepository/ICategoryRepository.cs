@@ -7,15 +7,10 @@ using System.Threading.Tasks;
 
 namespace BigStore.DataAccess.Repository.IRepository
 {
-    public interface ICategoryRepository
+    public interface ICategoryRepository : IRepository<Category>
     {
-        Task<List<Category>> GetCategories();
-        Task<Category?> GetCategoryById(int id);
-        Task<Category?> GetCategoryBySlug(string slug);
-        Task Add(Category category);
-        Task Update(Category category);
-        Task Remove(int id);
+        Task<Category?> GetBySlug(string slug);
 
-        Task<List<Category>> GetChildCategories(int parentId);
+        Task<List<Category>> GetChildren(string parentId);
     }
 }

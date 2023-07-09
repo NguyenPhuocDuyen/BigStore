@@ -1,21 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BigStore.BusinessObject
 {
-    public class ProductImage
+    public class ProductImage : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
+        public string ProductId { get; set; } = null!;
 
-        [Required]
-        public int ProductId { get; set; }
-
-        [Required, StringLength(255)]
+        [StringLength(255)]
         public string ImageUrl { get; set; } = string.Empty;
 
-        public DateTime? CreatAt { get; set; } = DateTime.UtcNow;
-        public bool? IsDelete { get; set; } = false;
-
-        public virtual Product? Product { get; set; }
+        [ForeignKey(nameof(ProductId))]
+        public virtual Product Product { get; set; } = null!;
     }
 }

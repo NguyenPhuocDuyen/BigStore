@@ -114,7 +114,7 @@ namespace BigStore.Pages.Products
                 case "star": break;
                 case "pop": break;
                 case "time":
-                    query = query.OrderByDescending(x => x.UpdateAt);
+                    query = query.OrderByDescending(x => x.UpdatedAt);
                     break;
                 case "sales": break;
                 default: break;

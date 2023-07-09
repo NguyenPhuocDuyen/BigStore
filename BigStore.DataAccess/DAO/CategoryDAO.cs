@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace BigStore.DataAccess.DAO
 {
-    public class CategoryDAO
+    internal class CategoryDAO : DAO<Category>
     {
-        public static async Task<List<Category>> GetCategories()
+        internal static async Task<List<Category>> GetAll()
         {
             try
             {
@@ -20,19 +20,15 @@ namespace BigStore.DataAccess.DAO
                 var categories = await _context.Categories
                     .Include(x => x.ParentCategory)
                     .Include(x => x.CategoryChildren)
-                    .ThenInclude(x => x.CategoryChildren)
+                        .ThenInclude(x => x.CategoryChildren)
                     .Where(x => x.ParentCategory == null)
-                    .AsNoTracking()
                     .ToListAsync();
                 return categories;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
         }
 
-        public static async Task<Category?> GetCategoryById(int id)
+        internal static async Task<Category?> GetById(string id)
         {
             try
             {
@@ -40,103 +36,42 @@ namespace BigStore.DataAccess.DAO
                 var category = await _context.Categories
                     .Include(x => x.ParentCategory)
                     .Include(x => x.CategoryChildren)
-                    .AsNoTracking()
+                        .ThenInclude(x => x.CategoryChildren)
                     .FirstOrDefaultAsync(x => x.Id == id);
                 return category;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
         }
 
-        public static async Task<Category?> GetCategoryBySlug(string slug)
+        internal static async Task<Category?> GetBySlug(string slug)
         {
             try
             {
                 using var _context = new ApplicationDbContext();
                 var category = await _context.Categories
                     .Include(x => x.ParentCategory)
+                    .Include(x => x.CategoryChildren)
+                        .ThenInclude(x => x.CategoryChildren)
                     .FirstOrDefaultAsync(x => x.Slug == slug);
                 return category;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
         }
 
-        public static async Task Add(Category category)
+        internal static async Task<List<Category>> GetChildren(string parentId)
         {
             try
             {
                 using var _context = new ApplicationDbContext();
-                await _context.Categories.AddAsync(category);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task Update(Category category)
-        {
-            try
-            {
-                using var _context = new ApplicationDbContext();
-                _context.Categories.Update(category);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task Remove(int id)
-        {
-            try
-            {
-                using var _context = new ApplicationDbContext();
-                var cateDb = _context.Categories
-                    .Include(x => x.ParentCategory)
-                    .Include(x => x.CategoryChildren)
-                    .FirstOrDefault(x => x.Id == id);
-                if (cateDb != null)
-                {
-                    if (cateDb.CategoryChildren != null)
-                    {
-                        foreach (var childCategory in cateDb.CategoryChildren)
-                        {
-                            childCategory.ParentCategoryId = cateDb.ParentCategoryId;
-                        }
-                    }
-                    _context.Categories.Remove(cateDb);
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task<List<Category>> GetChildCategories(int parentId)
-        {
-            try
-            {
-                using var _context = new ApplicationDbContext();
-                var categories = await _context.Categories.AsNoTracking()
+                var children = await _context.Categories
+                                .Include(x => x.ParentCategory)
                                 .Include(x => x.CategoryChildren)
+                                    .ThenInclude(x => x.CategoryChildren)
                                 .Where(x => x.ParentCategoryId == parentId)
                                 .ToListAsync();
-                return categories;
+                return children;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
         }
     }
 }

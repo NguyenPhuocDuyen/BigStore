@@ -8,7 +8,7 @@ namespace BigStore.Utility
         {
             source.Insert(0, new Category()
             {
-                Id = -1,
+                Id = "-1",
                 Title = "Không có danh mục cha"
             });
 

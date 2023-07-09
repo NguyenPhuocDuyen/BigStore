@@ -95,3 +95,8 @@ a {
     display: inline-block;
     margin-right: 10px; /* Add some spacing between images */
 }
+
+.check-buy {
+    min-width: 24px;
+    min-height: 24px;
+}

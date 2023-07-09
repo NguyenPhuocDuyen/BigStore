@@ -3,31 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BigStore.BusinessObject
 {
-    public class UserAddress
+    public class UserAddress : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
+        public string UserId { get; set; } = null!;
 
-        public string? UserId { get; set; } 
+        public string FullName { get; set; } = null!;
 
-        [Required]
-        [MaxLength(255)]
-        public string FullName { get; set; } = string.Empty;
+        public string Phone { get; set; } = null!;
 
-        [Required]
-        [Phone, MaxLength(20)]
-        public string Phone { get; set; } = string.Empty;
+        public string Address { get; set; } = null!;
 
-        [Required]
-        [Column(TypeName = "nvarchar(max)")]
-        public string Address { get; set; } = string.Empty;
+        public bool IsDefault { get; set; } = false;
 
-        public bool? IsDefault { get; set; } = false;
-
-        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
-        public bool? IsDelete { get; set; }
-
-        public virtual User? User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public virtual User User { get; set; } = null!;
     }
 }

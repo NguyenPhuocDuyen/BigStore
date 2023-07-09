@@ -10,7 +10,7 @@ namespace BigStore.BusinessObject.Validation
         {
             if (value == null) return false;
 
-            DateTime? date = (DateTime?)value;
+            DateTime date = (DateTime)value;
 
             if (date >= DateTime.Now.AddYears(-16)) return false;
 

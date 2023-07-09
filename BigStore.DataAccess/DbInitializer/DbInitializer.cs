@@ -54,8 +54,6 @@ namespace BigStore.DataAccess.DbInitializer
                     Phone = "01234567889",
                     Address = "Viet Nam",
                     ImageUrl = "/images/shops/shop.jpg",
-                    CreateAt = DateTime.Now,
-                    UpdateAt = DateTime.Now,
                     Products = new List<Product>()
                 };
 
@@ -151,7 +149,7 @@ namespace BigStore.DataAccess.DbInitializer
                     Email = "admin@admin.com",
                     EmailConfirmed = true,
                     ProductSubscriber = true,
-                    IsDelete = false,
+                    IsDeleted = false,
                     DOB = DateTime.Now,
                     ShopId = null,
                 };
@@ -202,24 +200,6 @@ namespace BigStore.DataAccess.DbInitializer
                     new OrderStatus { Name = OrderStatusContent.OrderCanceled }
                 };
                 _db.OrderStatuses.AddRange(orderStatuss);
-                _db.SaveChanges();
-
-                List<ReportStatus> reportStatuses = new()
-                {
-                    new ReportStatus { Name = ReportStatusContent.Pending},
-                    new ReportStatus { Name = ReportStatusContent.Accept},
-                    new ReportStatus { Name = ReportStatusContent.Reject}
-                };
-                _db.ReportStatus.AddRange(reportStatuses);
-                _db.SaveChanges();
-
-                List<ProductInteractionStatus> productInteractionStatuses = new()
-                {
-                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Like},
-                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Dislike},
-                    new ProductInteractionStatus {Name = ProductInteractionStatusContent.Favourite}
-                };
-                _db.ProductInteractionStatuses.AddRange(productInteractionStatuses);
                 _db.SaveChanges();
             }
         }

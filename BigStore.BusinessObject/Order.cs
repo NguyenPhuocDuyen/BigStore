@@ -4,37 +4,34 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BigStore.BusinessObject
 {
-    public class Order
+    public class Order : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public int OrderStatusId { get; set; }
+        public string OrderStatusId { get; set; } = null!;
 
-        public string? UserId { get; set; }
-        [Required]
-        public int DiscountCodeId { get; set; }
+        public string UserId { get; set; } = null!;
 
-        [Required, Column(TypeName = "decimal(18,0)")]
+        public string DiscountCodeId { get; set; } = null!;
+
+        [Column(TypeName = "decimal(18,0)")]
         [Range(1, 999999999999999999)]
         public decimal TotalPrice { get; set; }
 
-        [MaxLength(255)]
-        public string FullName { get; set; } = string.Empty;
+        public string FullName { get; set; } = null!;
 
-        [Phone, MaxLength(20)]
-        public string Phone { get; set; } = string.Empty;
+        [Phone]
+        public string Phone { get; set; } = null!;
 
-        [Column(TypeName = "nvarchar(max)")]
-        public string Address { get; set; } = string.Empty;
+        public string Address { get; set; } = null!;
 
-        public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdateAt { get; set; } = DateTime.UtcNow;
+        [ForeignKey(nameof(OrderStatusId))]
+        public virtual OrderStatus OrderStatus { get; set; } = null!;
 
-        public virtual OrderStatus? OrderStatus { get; set; }
-        public virtual User? User { get; set; }
-        public virtual DiscountCode? DiscountCode { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public virtual User User { get; set; } = null!;
 
-        public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
+        [ForeignKey(nameof(DiscountCodeId))]
+        public virtual DiscountCode DiscountCode { get; set; } = null!;
+
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BigStore.BusinessObject;
 using BigStore.BusinessObject.OtherModels;
 using BigStore.DataAccess;
+using BigStore.DataAccess.Repository.IRepository;
 using BigStore.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +15,12 @@ namespace BigStore.Areas.Customer.Controllers
     [Authorize(Roles = RoleContent.Customer)]
     public class CartsController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ICartRepository _cartRepository;
         private readonly UserManager<User> _userManager;
 
-        public CartsController(ApplicationDbContext dbContext, UserManager<User> userManager)
+        public CartsController(ICartRepository cartRepository, UserManager<User> userManager)
         {
-            _dbContext = dbContext;
+            _cartRepository = cartRepository;
             _userManager = userManager;
         }
 
@@ -32,23 +33,40 @@ namespace BigStore.Areas.Customer.Controllers
 
             string userId = user.Id;
 
-            // lấy các item trong giỏ hàng
-            var cartItems = await _dbContext.Carts
-                .Include(x => x.Product)
-                    .ThenInclude(x => x.Shop)
-                .Where(x => x.UserId.Equals(userId))
-                .ToListAsync();
+            // lấy các item trong giỏ hàng 
+            var cartItems = (await _cartRepository.GetAll())
+                    .Where(c => c.UserId.Equals(userId))
+                    .ToList();
 
-            var ketqua = cartItems.GroupBy(x => x.Product.Shop).ToList();
+            // cập nhật lại số lượng nếu số lượng trong shop không đủ trong giỏ hàng
+            foreach (var item in cartItems)
+            {
+                if (item.Quantity > item.Product.Quantity)
+                {
+                    item.Quantity = item.Product.Quantity;
+                }
+                await _cartRepository.Update(item);
+            }
+            //await _cartRepository.UpdateRange(cartItems);
 
-            return View(ketqua);
+            //nhóm theo shop
+            var listGroupShopAndItems = cartItems.GroupBy(x => x.Product?.Shop).ToList();
+
+            return View(listGroupShopAndItems);
         }
 
         [HttpPost]
         public async Task<IActionResult> MakeOrder(string[] selectedItems)
         {
-            var listCart = _dbContext.Carts.Where(x => selectedItems.Contains(x.Id.ToString())).ToList();
-            return View(listCart);
+            // lấy các item trong giỏ hàng được check mua
+            var cartItems = (await _cartRepository.GetAll())
+                    .Where(c => selectedItems.Contains(c.Id.ToString()))
+                    .ToList();
+
+            //nhóm theo shop 
+            var listItemsBuy = cartItems.GroupBy(x => x.Product?.Shop).ToList();
+
+            return View(listItemsBuy);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace BigStore.Areas.Identity.Pages.Account.Manage
 
             [Display(Name = "Ngày sinh")]
             [DataType(DataType.Date)]
-            public DateTime? DOB { get; set; }
+            public DateTime DOB { get; set; }
 
             //[MaxLength(255)]
             //public string ImageUrl { get; set; }

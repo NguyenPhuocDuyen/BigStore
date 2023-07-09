@@ -23,9 +23,9 @@ namespace BigStore.Pages
 
         public async Task OnGet()
         {
-            Categories = await _categoryRepository.GetCategories();
-            Products = (await _productRepository.GetProducts())
-                .OrderByDescending(x => x.UpdateAt).ToList();
+            Categories = await _categoryRepository.GetAll();
+            Products = (await _productRepository.GetAll())
+                .OrderByDescending(x => x.UpdatedAt).ToList();
         }
     }
 }

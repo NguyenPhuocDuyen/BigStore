@@ -63,10 +63,10 @@
                     @Html.DisplayFor(modelItem => item.Quantity)
                 </td>
                 <td>
-                    <input type="checkbox" @(item.IsDelete == true ?"checked":"") disabled/>
+                    <input type="checkbox" @(item.IsDeleted == true ?"checked":"") disabled/>
                 </td>
                 <td>
-                    @if (!(bool)item.IsDelete)
+                    @if (!(bool)item.IsDeleted)
                     {
                         <a class="btn btn-success" asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
                         <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Xoá</a>

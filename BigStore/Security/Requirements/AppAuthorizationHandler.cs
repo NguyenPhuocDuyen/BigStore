@@ -65,7 +65,7 @@ namespace BigStore.Security.Requirements
             if (appuser.DOB == null) return false;
             var require = requirement as GenZRequirement;
 
-            int year = appuser.DOB.Value.Year;
+            int year = appuser.DOB.Year;
             return (year >= require.MinYear && year <= require.MaxYear);
 
         }

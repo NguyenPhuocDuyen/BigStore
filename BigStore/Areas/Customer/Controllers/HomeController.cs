@@ -56,8 +56,8 @@ namespace BigStore.Areas.Customer.Controllers
 
             if (ModelState.IsValid)
             {
-                shop.CreateAt = DateTime.Now;
-                shop.UpdateAt = DateTime.Now;
+                shop.CreatedAt = DateTime.Now;
+                shop.UpdatedAt = DateTime.Now;
 
                 //save images default
                 shop.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "shops");

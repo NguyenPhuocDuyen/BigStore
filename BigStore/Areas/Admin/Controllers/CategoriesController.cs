@@ -17,19 +17,17 @@ namespace BigStore.Areas.Admin.Controllers
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IConfiguration _configuration;
-        private readonly ApplicationDbContext _context;
 
-        public CategoriesController(ICategoryRepository categoryRepository, IConfiguration configuration, ApplicationDbContext context)
+        public CategoriesController(ICategoryRepository categoryRepository, IConfiguration configuration)
         {
             _categoryRepository = categoryRepository;
             _configuration = configuration;
-            _context = context;
         }
 
         // GET: Admin/Categories
         public async Task<IActionResult> Index(int pageIndex)
         {
-            var categories = await _categoryRepository.GetCategories();
+            var categories = await _categoryRepository.GetAll();
 
             var pageSize = _configuration.GetValue("PageSize", 24);
             var pagingCategories = PaginatedList<Category>.CreateAsync(categories, pageIndex, pageSize);
@@ -39,7 +37,7 @@ namespace BigStore.Areas.Admin.Controllers
         // GET: Admin/Categories/Details/5
         public async Task<IActionResult> Details(string slug)
         {
-            var category = await _categoryRepository.GetCategoryBySlug(slug);
+            var category = await _categoryRepository.GetBySlug(slug);
             if (category == null) return NotFound();
             return View(category);
         }
@@ -58,17 +56,17 @@ namespace BigStore.Areas.Admin.Controllers
         {
             //Generate slug
             category.Slug = Slug.GenerateSlug(category.Title);
-            var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
+            var cateSlug = await _categoryRepository.GetBySlug(category.Slug);
             if (cateSlug != null)
                 ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
 
             if (ModelState.IsValid)
             {
                 category.ImageUrl = await Image.GetPathImageSaveAsync(ThumbnailFile, "categories");
-                if (category.ParentCategoryId == -1) category.ParentCategoryId = null;
-                category.CreateAt = DateTime.UtcNow;
-                category.UpdateAt = DateTime.UtcNow;
-                category.IsDelete = false;
+                if (category.ParentCategoryId == "-1") category.ParentCategoryId = null;
+                category.CreatedAt = DateTime.UtcNow;
+                category.UpdatedAt = DateTime.UtcNow;
+                category.IsDeleted = false;
                 try
                 {
                     await _categoryRepository.Add(category);
@@ -86,12 +84,9 @@ namespace BigStore.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
-                return NotFound();
-
-            var category = await _categoryRepository.GetCategoryById((int)id);
+            var category = await _categoryRepository.GetById(id);
             if (category == null)
                 return NotFound();
 
@@ -102,12 +97,12 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ParentCategoryId,Title,Description")] Category category, IFormFile? ThumbnailFile)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,ParentCategoryId,Title,Description")] Category category, IFormFile? ThumbnailFile)
         {
             if (id != category.Id)
                 return NotFound();
 
-            var existingCategory = await _categoryRepository.GetCategoryById(category.Id);
+            var existingCategory = await _categoryRepository.GetById(category.Id);
             if (existingCategory == null)
                 return NotFound();
 
@@ -119,9 +114,9 @@ namespace BigStore.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, "Phải chọn danh mục cha khác");
             }
 
-            if (canUpdate && category.ParentCategoryId != null && category.ParentCategoryId != -1)
+            if (canUpdate && category.ParentCategoryId != null && category.ParentCategoryId != "-1")
             {
-                var childCates = await _categoryRepository.GetChildCategories(category.Id);
+                var childCates = await _categoryRepository.GetChildren(category.Id);
 
                 Func<List<Category>, bool> checkCateIds = null;
                 checkCateIds = (cates) =>
@@ -146,7 +141,7 @@ namespace BigStore.Areas.Admin.Controllers
 
             //Generate slug
             category.Slug = Slug.GenerateSlug(category.Title);
-            var cateSlug = await _categoryRepository.GetCategoryBySlug(category.Slug);
+            var cateSlug = await _categoryRepository.GetBySlug(category.Slug);
             if (cateSlug != null && cateSlug.Id != category.Id)
                 ModelState.AddModelError(string.Empty, "Danh mục bị trùng slug. Hãy đặt tên khác");
 
@@ -155,7 +150,7 @@ namespace BigStore.Areas.Admin.Controllers
                 try
                 {
                     existingCategory.ParentCategoryId = category.ParentCategoryId;
-                    if (existingCategory.ParentCategoryId == -1) existingCategory.ParentCategoryId = null;
+                    if (existingCategory.ParentCategoryId == "-1") existingCategory.ParentCategoryId = null;
 
                     //save images
                     // Giữ nguyên giá trị cũ của ImageUrl nếu không có file được tải lên
@@ -166,7 +161,7 @@ namespace BigStore.Areas.Admin.Controllers
                     ////Generate slug
                     //category.Slug = Slug.GenerateSlug(category.Title);
 
-                    existingCategory.UpdateAt = DateTime.UtcNow;
+                    existingCategory.UpdatedAt = DateTime.UtcNow;
 
                     await _categoryRepository.Update(existingCategory);
                     //_context.Entry(category).State = EntityState.Modified;
@@ -192,10 +187,10 @@ namespace BigStore.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null) return NotFound();
-            var category = await _categoryRepository.GetCategoryById((int)id);
+            var category = await _categoryRepository.GetById(id);
             if (category == null) return NotFound();
 
             return View(category);
@@ -204,26 +199,32 @@ namespace BigStore.Areas.Admin.Controllers
         // POST: Admin/Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var category = await _categoryRepository.GetCategoryById(id);
+            var category = await _categoryRepository.GetById(id);
 
             if (category == null)
                 return NotFound();
 
-            await _categoryRepository.Remove(id);
+            foreach (var item in category.CategoryChildren)
+            {
+                item.ParentCategoryId = category.ParentCategoryId;
+            }
+            category.IsDeleted = true;
+            category.UpdatedAt = DateTime.UtcNow;
+            await _categoryRepository.Update(category);
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> CategoryExists(int id)
+        private async Task<bool> CategoryExists(string id)
         {
-            var category = await _categoryRepository.GetCategoryById(id);
+            var category = await _categoryRepository.GetById(id);
             return category is not null;
         }
 
-        private async Task<SelectList?> RenderSelectListCategories(int? idSelect)
+        private async Task<SelectList?> RenderSelectListCategories(string? idSelect)
         {
-            var categories = await _categoryRepository.GetCategories();
+            var categories = await _categoryRepository.GetAll();
             var items = SelectItem.CreateSelectItemsHasNoParent(categories);
             return new SelectList(items, "Id", "Title", idSelect);
         }

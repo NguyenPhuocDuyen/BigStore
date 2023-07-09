@@ -2,7 +2,8 @@
 var token = 'Bearer ' + document.cookie.replace(/(?:(?:^|.*;\s*)access_token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
 
 //url local of razor page
-var urlLocal = 'https://localhost:7292/api/';
+var currentHost = window.location.host;
+var urlLocal = 'https://' + currentHost + '/api/';
 
 var urlCart = urlLocal + 'Carts';
 

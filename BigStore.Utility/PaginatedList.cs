@@ -26,6 +26,7 @@
                 return (PageIndex < TotalPages);
             }
         }
+
         public static PaginatedList<T> CreateAsync(
         List<T> source, int pageIndex, int pageSize)
         {

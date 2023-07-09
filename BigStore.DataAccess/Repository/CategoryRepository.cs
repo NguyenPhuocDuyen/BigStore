@@ -11,13 +11,25 @@ namespace BigStore.DataAccess.Repository
 {
     public class CategoryRepository : ICategoryRepository
     {
-        public async Task<List<Category>> GetCategories() => await CategoryDAO.GetCategories();
-        public async Task<Category?> GetCategoryById(int id) => await CategoryDAO.GetCategoryById(id);
-        public async Task<Category?> GetCategoryBySlug(string slug) => await CategoryDAO.GetCategoryBySlug(slug);
-        public async Task Add(Category category) => await CategoryDAO.Add(category);
-        public async Task Update(Category category) => await CategoryDAO.Update(category);
-        public async Task Remove(int id) => await CategoryDAO.Remove(id);
+        public async Task Add(Category entity)
+            => await CategoryDAO.Add(entity);
 
-        public async Task<List<Category>> GetChildCategories(int parentId) => await CategoryDAO.GetChildCategories(parentId);
+        public async Task<List<Category>> GetAll()
+            => await CategoryDAO.GetAll();
+
+        public async Task<Category?> GetById(string id)
+            => await CategoryDAO.GetById(id);
+
+        public async Task<Category?> GetBySlug(string slug)
+            => await CategoryDAO.GetBySlug(slug);
+
+        public async Task<List<Category>> GetChildren(string parentId)
+            => await CategoryDAO.GetChildren(parentId);
+
+        public async Task Remove(Category entity)
+            => await CategoryDAO.Remove(entity);
+
+        public async Task Update(Category entity)
+            => await CategoryDAO.Update(entity);
     }
 }

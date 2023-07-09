@@ -11,7 +11,7 @@
     <div class="bg-white px-3 py-2 mt-3">
         <div class="row">
             <div class="col-6 row">
-                <input type="checkbox" id="checkAll" class="col-1 h-75" />
+                <input type="checkbox" id="checkAll" class="col-1 h-75 check-buy" />
                 <h6 class="col">Sản phẩm</h6>
             </div>
             <div class="col-6 row">
@@ -28,7 +28,7 @@
         <div class="bg-white px-3 py-2 mt-3">
             <div class="row">
                 <div class="col-6 row align-items-center">
-                    <input type="checkbox" class="col-1 h-75 checkbox-item shop" />
+                    <input type="checkbox" class="col-1 h-75 checkbox-item shop check-buy" />
                     <h5 class="col">Shop @shop.ShopName</h5>
                 </div>
                 <div class="col-6"></div>
@@ -39,19 +39,22 @@
                     <hr />
                     <div class="row">
                         <div class="col-6 row align-items-center">
-                            <input type="checkbox" class="col-1 h-25 checkbox-item product" />
+                            <input type="checkbox" class="col-1 h-25 checkbox-item product check-buy" @(item.Quantity == 0 ? "disabled" : "") />
                             <div class="col-2">
-                                <img class="card-img-top" src="~/images/noimage.jpg" alt="anh" />
+                                <img class="card-img-top" src="@item.Product?.ProductImages?.FirstOrDefault()?.ImageUrl" alt="anh" />
                             </div>
-                            <h6 class="col">Sản phẩm @item.Product.Name</h6>
+                            <h6 class="col">Sản phẩm @item.Product?.Name</h6>
                         </div>
                         <div class="col-6 row align-items-center">
-                            <p class="col product-price">@item.Product.Price</p>
+                            <p class="col product-price">@item.Product?.Price</p>
                             <div class="col">
-                                <input class="quantity-input" type="number" value="@item.Quantity" min="1" max="@item.Product.Quantity" required />
+                                <input class="quantity-input" type="number" value="@item.Quantity" min="1" max="@item.Product?.Quantity" required />
                             </div>
-                            <p class="col product-total-price">@(item.Product.Price * item.Quantity) đ</p>
-                            <button class="col btn deleteCart"><i class="fa-solid fa-trash"></i></button>
+                            <p class="col product-total-price">@(item.Product?.Price * item.Quantity) đ</p>
+                            <div class="col">
+                                <button class="btn deleteCart"><i class="fa-solid fa-trash"></i></button>
+                                <p class="text-danger">@(item.Quantity == 0 ? "Hêt hàng" : "")</p>
+                            </div>
                         </div>
                     </div>
                 </div>

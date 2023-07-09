@@ -87,10 +87,10 @@ namespace BigStore.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int? id, [FromBody] Cart cart)
+        public async Task<IActionResult> Put(string id, [FromBody] Cart cart)
         {
-            if (id is null)
-                return BadRequest(new ApiResponse { Message = "Thiếu id" });
+            if (id != cart.Id)
+                return BadRequest(new ApiResponse { Message = "Id không khớp" });
 
             //// lấy thông tin người dùng hiện tại
             var user = await _userManager.GetUserAsync(HttpContext.User);
@@ -98,6 +98,8 @@ namespace BigStore.Controllers
                 return NotFound(new ApiResponse { Message = "Không tìm thấy người dùng" });
 
             var cartDb = await _dbContext.Carts.Include(x => x.Product).FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
+            if (cartDb == null)
+                return NotFound(new ApiResponse { Message = "Không tìm thấy item" });
 
             // biến check số lượng sản phẩm hợp lệ
             bool quanlityIsValid = true;
@@ -124,7 +126,7 @@ namespace BigStore.Controllers
 
         // DELETE api/<CartsController>/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             //// lấy thông tin người dùng hiện tại
             var user = await _userManager.GetUserAsync(HttpContext.User);

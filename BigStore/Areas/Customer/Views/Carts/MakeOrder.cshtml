@@ -1,9 +1,16 @@
-﻿@model List<Cart>
+﻿@model List<IGrouping<Shop, Cart>>
 @{
     ViewData["Title"] = "Tạo đơn hàng";
 }
 <h1>@ViewData["Title"]</h1>
-@foreach (var item in Model)
+
+@foreach (var group in Model)
 {
-    <p>@item.Quantity</p>
+    var shop = group.Key;
+
+    <p>Shop name: @shop.ShopName</p>
+    @foreach (var item in group)
+    {
+        <p>Tên sản phẩm: @item.Product?.Name</p>
+    }
 }
